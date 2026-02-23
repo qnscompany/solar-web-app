@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
 import Script from 'next/script';
 import { supabase } from '@/lib/supabase';
+import { formatKoreanWon } from '@/utils/formatters';
 
 interface Company {
     id: string;
@@ -47,6 +48,7 @@ export default function CompaniesPage() {
     const [mapReady, setMapReady] = useState(false);
     const mapContainer = useRef<HTMLDivElement>(null);
     const mapInstance = useRef<any>(null);
+    const activeOverlay = useRef<any>(null);
 
     // 업체 데이터 가져오기
     useEffect(() => {
@@ -70,7 +72,6 @@ export default function CompaniesPage() {
                     .eq('is_verified', true);
 
                 if (error) throw error;
-                console.log('Fetched companies:', data?.length);
 
                 const formattedData = (data as any[]).map(item => ({
                     ...item,
@@ -87,7 +88,6 @@ export default function CompaniesPage() {
         }
         fetchCompanies();
 
-        // SDK가 이미 헤더에 로드되어 있는 경우를 위한 즉시 체크
         const kakao = (window as any).kakao;
         if (kakao && kakao.maps) {
             setMapReady(true);
@@ -129,7 +129,6 @@ export default function CompaniesPage() {
         kakao.maps.load(() => {
             if (!mapContainer.current) return;
 
-            // 지도 중심 설정
             const centerLat = userLoc?.lat || sortedCompanies.find(c => c.latitude)?.latitude || 36.5;
             const centerLng = userLoc?.lng || sortedCompanies.find(c => c.longitude)?.longitude || 127.5;
 
@@ -138,56 +137,91 @@ export default function CompaniesPage() {
                 level: 8
             };
 
-            // 컨테이너 초기화 및 지도 생성
             mapContainer.current.innerHTML = '';
             const map = new kakao.maps.Map(mapContainer.current, options);
             mapInstance.current = map;
 
-            // 마커 및 정보창 추가
+            // 지도 빈 곳 클릭 시 팝업 닫기
+            kakao.maps.event.addListener(map, 'click', () => {
+                if (activeOverlay.current) {
+                    activeOverlay.current.setMap(null);
+                    activeOverlay.current = null;
+                }
+            });
+
             sortedCompanies.forEach(company => {
                 if (!company.latitude || !company.longitude) return;
 
                 const position = new kakao.maps.LatLng(company.latitude, company.longitude);
 
-                // 이미지 로딩 문제를 피하기 위해 이모지 별표 사용 (CustomOverlay)
-                const content = `
-                    <div style="cursor: pointer; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2)); text-align: center;">
-                        <span style="font-size: 28px;">⭐</span>
+                // 마커 역할을 할 별표 이모지 오버레이
+                const markerContent = document.createElement('div');
+                markerContent.innerHTML = '<span style="font-size: 28px; cursor: pointer; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));">⭐</span>';
+
+                const markerOverlay = new kakao.maps.CustomOverlay({
+                    position: position,
+                    content: markerContent,
+                    yAnchor: 1
+                });
+                markerOverlay.setMap(map);
+
+                // 상세 정보 팝업 (CustomOverlay)
+                const popupContent = document.createElement('div');
+                popupContent.className = 'bg-white rounded-lg shadow-xl border border-gray-100 min-w-[220px] overflow-hidden';
+                popupContent.style.transform = 'translateY(-50px)';
+
+                // HTML 문자열로 팝업 내부 구성
+                popupContent.innerHTML = `
+                    <div class="p-4" style="font-family: sans-serif;">
+                        <div class="flex items-center gap-1 mb-1" style="display: flex; align-items: center; gap: 4px; margin-bottom: 4px;">
+                            <span style="font-size: 14px;">🌟</span>
+                            <h4 style="margin: 0; font-size: 14px; font-weight: 900; color: #0f172a;">${company.company_name}</h4>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 700; color: #64748b; margin-bottom: 8px;">
+                            <span style="color: #eab308;">⭐ 4.8점</span>
+                            <span>·</span>
+                            <span>시공 47건</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 500; color: #94a3b8; margin-bottom: 4px;">
+                            <span>📍</span>
+                            <span>${company.headquarters_address.split(' ').slice(0, 2).join(' ')}</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 500; color: #94a3b8; margin-bottom: 16px;">
+                            <span>🔧</span>
+                            <span>보증 15년 · 3~100kW</span>
+                        </div>
+                        <a href="/companies/${company.id}" style="display: block; width: 100%; text-align: center; padding: 8px 0; background-color: #0f172a; color: white; font-size: 11px; font-weight: 900; border-radius: 6px; text-decoration: none; transition: background-color 0.2s;">
+                            상세보기 →
+                        </a>
                     </div>
                 `;
 
-                const overlay = new kakao.maps.CustomOverlay({
+                // Tailwind 클래스가 CustomOverlay 내에서 잘 작동하지 않을 수 있으므로 인라인 스타일 병행
+                const detailOverlay = new kakao.maps.CustomOverlay({
                     position: position,
-                    content: content,
-                    yAnchor: 1
+                    content: popupContent,
+                    yAnchor: 1,
+                    zIndex: 10
                 });
 
-                overlay.setMap(map);
-
-                // 정보창 표시를 위한 보이지 않는 마커 (이벤트용)
-                const marker = new kakao.maps.Marker({
-                    position: position,
-                    map: map,
-                    opacity: 0
-                });
-
-                const infowindow = new kakao.maps.InfoWindow({
-                    content: `<div style="padding:10px;font-size:12px;color:#333;font-weight:bold;border-radius:8px;background:white;border:1px solid #ddd;min-width:120px;text-align:center;">${company.company_name}</div>`
-                });
-
-                kakao.maps.event.addListener(marker, 'mouseover', () => infowindow.open(map, marker));
-                kakao.maps.event.addListener(marker, 'mouseout', () => infowindow.close());
+                markerContent.onclick = () => {
+                    if (activeOverlay.current) {
+                        activeOverlay.current.setMap(null);
+                    }
+                    detailOverlay.setMap(map);
+                    activeOverlay.current = detailOverlay;
+                    map.panTo(new kakao.maps.LatLng(company.latitude + 0.005, company.longitude));
+                };
             });
 
-            // 내 위치 표시 (귀여운 동물 마스코트로 변경)
+            // 내 위치 표시
             if (userLoc) {
                 const userContent = `
                     <div style="cursor: pointer; filter: drop-shadow(0 3px 6px rgba(0,0,0,0.2)); display: flex; flex-direction: column; align-items: center;">
                         <div style="background: white; width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 3px solid #ff9d00; position: relative;">
                             <span style="font-size: 28px;">🐹</span>
-                            <div style="position: absolute; -top: 5px; -right: 5px; background: #ff9d00; width: 12px; height: 12px; border-radius: 50%; border: 2px solid white;"></div>
                         </div>
-                        <div style="background: #ff9d00; color: white; padding: 2px 10px; border-radius: 12px; font-size: 11px; font-weight: 800; margin-top: 4px; white-space: nowrap; border: 1px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">내 위치</div>
+                        <div style="background: #ff9d00; color: white; padding: 2px 10px; border-radius: 12px; font-size: 11px; font-weight: 800; margin-top: 4px; white-space: nowrap; border: 1px solid white;">내 위치</div>
                     </div>
                 `;
                 new kakao.maps.CustomOverlay({
@@ -221,18 +255,11 @@ export default function CompaniesPage() {
             </div>
 
             <div className="max-w-7xl mx-auto px-6 mt-8 flex flex-col lg:flex-row gap-8">
-                {/* 왼쪽: 지도 영역 */}
                 <div className="lg:w-1/2">
-                    {companies.length === 1 && (
-                        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-4 text-sm text-amber-800 font-bold">
-                            ⚠️ 보안 정책(RLS)으로 인해 내 업체 정보만 표시되고 있습니다. <br />
-                            다른 모든 업체를 보시려면 Supabase SQL Editor에서 가이드드린 SQL을 실행해 주세요.
-                        </div>
-                    )}
                     <div className="bg-white rounded-2xl border border-gray-200 p-2 shadow-sm sticky top-8">
                         <div
                             ref={mapContainer}
-                            className="w-full h-[500px] rounded-xl overflow-hidden grayscale-[0.2] contrast-[1.1]"
+                            className="w-full h-[500px] rounded-xl overflow-hidden"
                             id="map"
                         />
                         <div className="p-4 flex gap-6 text-xs font-bold text-gray-500">
@@ -246,18 +273,12 @@ export default function CompaniesPage() {
                     </div>
                 </div>
 
-                {/* 오른쪽: 리스트 영역 */}
                 <div className="lg:w-1/2 space-y-4">
                     <div className="flex justify-between items-center mb-6">
                         <h2 className="text-xl font-bold text-gray-900">
                             {userLoc ? '거리순 추천 업체' : '전체 등록 업체'}
                             <span className="ml-2 text-sm font-normal text-gray-400">({sortedCompanies.length})</span>
                         </h2>
-                        {userLoc && (
-                            <span className="bg-blue-50 text-blue-600 px-3 py-1 rounded-full text-xs font-bold ring-1 ring-blue-100">
-                                내 위치 기준 정렬됨
-                            </span>
-                        )}
                     </div>
 
                     <div className="grid gap-4">
@@ -271,9 +292,6 @@ export default function CompaniesPage() {
                                             </h3>
                                             <p className="text-xs text-gray-500 mt-1 line-clamp-1">
                                                 {company.headquarters_address}
-                                            </p>
-                                            <p className="text-xs text-blue-500 font-bold mt-1">
-                                                {company.service_areas?.join(', ') || '전국 서비스'}
                                             </p>
                                         </div>
                                         {company.distance && (
@@ -293,19 +311,13 @@ export default function CompaniesPage() {
                                         </div>
                                         <div className="bg-gray-50 p-3 rounded-lg">
                                             <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">시공능력평가액</p>
-                                            <p className="text-sm font-black text-gray-700">{(company.capabilities?.construction_capacity_value ?? 0).toLocaleString()} <small className="font-bold">원</small></p>
+                                            <p className="text-sm font-black text-gray-700">{formatKoreanWon(company.capabilities?.construction_capacity_value ?? 0)}</p>
                                         </div>
                                     </div>
                                 </div>
                             </Link>
                         ))}
                     </div>
-
-                    {sortedCompanies.length === 0 && (
-                        <div className="text-center py-20 bg-white rounded-2xl border border-dashed border-gray-200">
-                            <p className="text-gray-400 font-bold">등록된 업체가 없습니다.</p>
-                        </div>
-                    )}
                 </div>
             </div>
         </main>

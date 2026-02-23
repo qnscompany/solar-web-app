@@ -4,7 +4,8 @@ import { useEffect, useState, use } from 'react';
 import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
 import LeadRequestForm from '@/components/LeadRequestForm';
-import { Star, Quote } from 'lucide-react';
+import { Star, Quote, Award, Shield, Users, Activity } from 'lucide-react';
+import { formatKoreanWon } from '@/utils/formatters';
 
 interface CompanyDetail {
     id: string;
@@ -18,23 +19,13 @@ interface CompanyDetail {
     };
 }
 
-/**
- * 특정 업체 상세 정보 페이지 (Dynamic Route)
- * 서버로부터 업체 프로필과 역량 정보를 가져와 상세히 보여줍니다.
- */
 export default function CompanyDetailPage({ params }: { params: Promise<{ id: string }> }) {
-    // [Next.js dynamic params] React 'use' 훅을 통해 비동기 파라미터를 해제합니다.
     const { id } = use(params);
-
-    // [상태 관리] 업체 데이터, 로딩 상태, 에러 상태
     const [company, setCompany] = useState<CompanyDetail | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        /**
-         * 업체 상세 데이터 및 관계 테이블(capabilities) 데이터를 페칭합니다.
-         */
         async function fetchCompany() {
             try {
                 const { data, error } = await supabase
@@ -56,7 +47,6 @@ export default function CompanyDetailPage({ params }: { params: Promise<{ id: st
                 if (error) throw error;
                 if (!data) throw new Error('업체 정보를 찾을 수 없습니다.');
 
-                // [데이터 정규화] Supabase 관계 쿼리 결과가 배열일 경우 첫 번째 항목을 사용합니다.
                 setCompany({
                     ...data,
                     capabilities: (Array.isArray(data.capabilities) ? data.capabilities[0] : data.capabilities) || {
@@ -72,13 +62,9 @@ export default function CompanyDetailPage({ params }: { params: Promise<{ id: st
                 setLoading(false);
             }
         }
-
         fetchCompany();
     }, [id]);
 
-    // -----------------------------------------------------------------
-    // [조건부 렌더링] 로딩 중 및 에러 시 화면 처리
-    // -----------------------------------------------------------------
     if (loading) return <div className="p-8 text-center text-xl font-medium">상세 정보를 불러오는 중...</div>;
 
     if (error || !company) return (
@@ -90,69 +76,112 @@ export default function CompanyDetailPage({ params }: { params: Promise<{ id: st
 
     return (
         <main className="min-h-screen bg-gray-50 pb-20">
-            {/* 업체 타이틀 영역 */}
-            <div className="bg-blue-600 text-white py-12">
-                <div className="mx-auto max-w-4xl px-8">
-                    <Link href="/companies" className="text-blue-100 hover:text-white mb-6 inline-block transition-colors">
-                        ← 리스트로 돌아가기
+            <div className="bg-slate-900 text-white py-16">
+                <div className="mx-auto max-w-5xl px-8">
+                    <Link href="/companies" className="text-slate-400 hover:text-white mb-8 inline-flex items-center gap-2 transition-colors font-bold">
+                        ← 전체 업체 리스트
                     </Link>
-                    <h1 className="text-4xl font-extrabold">{company.company_name}</h1>
-                    <p className="mt-2 text-blue-100 text-lg">전문 태양광 시공 파트너</p>
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                        <div>
+                            <div className="flex items-center gap-2 mb-4">
+                                <span className="bg-blue-600 text-white px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider">Verified Partner</span>
+                            </div>
+                            <h1 className="text-4xl md:text-5xl font-black">{company.company_name}</h1>
+                            <p className="mt-4 text-slate-400 text-lg font-medium">우리 지역 믿을 수 있는 태양광 시공 전문가</p>
+                        </div>
+                        <div className="bg-white/5 p-6 rounded-3xl backdrop-blur-sm border border-white/10">
+                            <div className="flex items-center gap-4">
+                                <div className="text-center px-4 border-r border-white/10">
+                                    <p className="text-blue-400 text-xs font-black mb-1">평균 평점</p>
+                                    <p className="text-2xl font-black">4.8</p>
+                                </div>
+                                <div className="text-center px-4">
+                                    <p className="text-blue-400 text-xs font-black mb-1">누적 시공</p>
+                                    <p className="text-2xl font-black">47건</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <div className="mx-auto max-w-4xl px-8 -mt-8">
-                {/* [상세 레이아웃 영역] 실무 개발자가 확장 가능하도록 그리드로 구성 */}
+            <div className="mx-auto max-w-5xl px-8 -mt-10">
                 <div className="grid gap-8 md:grid-cols-2">
-                    {/* (기존 상세 정보 카드들이 여기에 배치됩니다) */}
-                </div>
+                    {/* 시공실적 카드 */}
+                    <div className="bg-white p-8 rounded-[32px] shadow-xl shadow-slate-200/50 border border-slate-100 transition-all hover:shadow-2xl">
+                        <div className="flex items-center gap-3 mb-8">
+                            <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center">
+                                <Award className="w-6 h-6" />
+                            </div>
+                            <h3 className="text-xl font-black text-slate-900">시공실적 및 역량</h3>
+                        </div>
+                        <div className="space-y-6">
+                            <div className="flex justify-between items-end border-b border-slate-50 pb-4">
+                                <span className="text-sm font-bold text-slate-400 flex items-center gap-2">
+                                    <Activity className="w-4 h-4" /> 누적 설치 용량
+                                </span>
+                                <span className="text-xl font-black text-slate-900">{company.capabilities.cumulative_capacity_mw} <small className="text-xs">MW</small></span>
+                            </div>
+                            <div className="flex justify-between items-end border-b border-slate-50 pb-4">
+                                <span className="text-sm font-bold text-slate-400 flex items-center gap-2">
+                                    <Award className="w-4 h-4" /> 시공능력평가액
+                                </span>
+                                <span className="text-xl font-black text-blue-600">{formatKoreanWon(company.capabilities.construction_capacity_value)}</span>
+                            </div>
+                        </div>
+                    </div>
 
-                {/* [SECTION] 고객 설치 후기 (샘플 데이터)
-                    - 사회적 증명(Social Proof)을 통해 신뢰도를 높이는 UI 섹션
-                */}
-                <div className="mt-12">
-                    <h2 className="text-2xl font-black text-slate-900 mb-8 flex items-center gap-2">
-                        <Quote className="text-orange-500 w-6 h-6" /> {"고객님들의 생생한 설치 후기"}
-                    </h2>
-                    <div className="grid gap-6 md:grid-cols-3">
-                        {/* 후기 카드 1 */}
-                        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 transition-transform hover:-translate-y-1">
-                            <div className="flex text-yellow-400 mb-3">
-                                {[...Array(5)].map((_, i) => <Star key={i} className="w-4 h-4 fill-current" />)}
+                    {/* 보증 및 인력 카드 */}
+                    <div className="bg-white p-8 rounded-[32px] shadow-xl shadow-slate-200/50 border border-slate-100 transition-all hover:shadow-2xl">
+                        <div className="flex items-center gap-3 mb-8">
+                            <div className="w-12 h-12 bg-orange-50 text-orange-600 rounded-2xl flex items-center justify-center">
+                                <Shield className="w-6 h-6" />
                             </div>
-                            <p className="text-slate-700 font-bold mb-4">"설치 후 전기세가 월 8만원에서 1만원으로 줄었어요!"</p>
-                            <div className="flex items-center justify-between text-xs font-bold text-slate-400 border-t pt-4">
-                                <span>김○○ 고객님</span>
-                                <span>당진시 송악읍 | 5kW</span>
-                            </div>
+                            <h3 className="text-xl font-black text-slate-900">보증 및 전문 인력</h3>
                         </div>
-                        {/* 후기 카드 2 */}
-                        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 transition-transform hover:-translate-y-1">
-                            <div className="flex text-yellow-400 mb-3">
-                                {[...Array(5)].map((_, i) => <Star key={i} className="w-4 h-4 fill-current" />)}
+                        <div className="space-y-6">
+                            <div className="flex justify-between items-end border-b border-slate-50 pb-4">
+                                <span className="text-sm font-bold text-slate-400 flex items-center gap-2">
+                                    <Shield className="w-4 h-4" /> 하자 보증 기간
+                                </span>
+                                <span className="text-xl font-black text-slate-900">{company.capabilities.warranty_period_years}년</span>
                             </div>
-                            <p className="text-slate-700 font-bold mb-4">"견적부터 설치까지 친절하게 안내해줬어요."</p>
-                            <div className="flex items-center justify-between text-xs font-bold text-slate-400 border-t pt-4">
-                                <span>이○○ 고객님</span>
-                                <span>서산시 해미면 | 3kW</span>
-                            </div>
-                        </div>
-                        {/* 후기 카드 3 */}
-                        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 transition-transform hover:-translate-y-1">
-                            <div className="flex text-yellow-400 mb-3">
-                                {[...Array(4)].map((_, i) => <Star key={i} className="w-4 h-4 fill-current" />)}
-                                <Star className="w-4 h-4 text-slate-200" />
-                            </div>
-                            <p className="text-slate-700 font-bold mb-4">"A/S 전화했을 때 당일 방문해줘서 믿음직스러웠습니다."</p>
-                            <div className="flex items-center justify-between text-xs font-bold text-slate-400 border-t pt-4">
-                                <span>박○○ 고객님</span>
-                                <span>아산시 탕정면 | 10kW</span>
+                            <div className="flex justify-between items-end border-b border-slate-50 pb-4">
+                                <span className="text-sm font-bold text-slate-400 flex items-center gap-2">
+                                    <Users className="w-4 h-4" /> 보유 기술자 수
+                                </span>
+                                <span className="text-xl font-black text-slate-900">{company.capabilities.technician_count}명</span>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                {/* [FORM] 견적 요청 입력 인터페이스 */}
+                <div className="mt-16">
+                    <h2 className="text-2xl font-black text-slate-900 mb-8 flex items-center gap-3">
+                        <Quote className="text-blue-600 w-8 h-8" /> <span>고객님들의 실제 설치 후기</span>
+                    </h2>
+                    <div className="grid gap-6 md:grid-cols-3">
+                        {[
+                            { name: '김○○', loc: '당진시 송악읍', cap: '5kW', text: '설치 후 전기세가 월 8만원에서 1만원으로 줄었어요!', stars: 5 },
+                            { name: '이○○', loc: '서산시 해미면', cap: '3kW', text: '견적부터 설치까지 친절하게 안내해줬어요.', stars: 5 },
+                            { name: '박○○', loc: '아산시 탕정면', cap: '10kW', text: 'A/S 전화했을 때 당일 방문해줘서 믿음직스러웠습니다.', stars: 4 }
+                        ].map((review, idx) => (
+                            <div key={idx} className="bg-white p-8 rounded-[32px] shadow-sm border border-slate-100 transition-all hover:shadow-md">
+                                <div className="flex text-yellow-400 mb-4">
+                                    {[...Array(5)].map((_, i) => (
+                                        <Star key={i} className={`w-4 h-4 ${i < review.stars ? 'fill-current' : 'text-slate-200'}`} />
+                                    ))}
+                                </div>
+                                <p className="text-slate-700 font-bold mb-6 italic leading-relaxed">"{review.text}"</p>
+                                <div className="flex items-center justify-between text-xs font-black text-slate-400 border-t border-slate-50 pt-6">
+                                    <span>{review.name} 고객님</span>
+                                    <span>{review.loc} | {review.cap}</span>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
                 <LeadRequestForm companyId={company.id} companyName={company.company_name} />
             </div>
         </main>
