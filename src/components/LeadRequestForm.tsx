@@ -15,6 +15,7 @@ export default function LeadRequestForm({ companyId, companyName }: LeadRequestF
         phone: '',
         address: '',
         expected_capacity: '',
+        notes: '',
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
@@ -39,6 +40,7 @@ export default function LeadRequestForm({ companyId, companyName }: LeadRequestF
                         phone: formData.phone,
                         address: formData.address,
                         expected_capacity: formData.expected_capacity,
+                        notes: formData.notes,
                         status: 'pending',
                     },
                 ]);
@@ -73,6 +75,7 @@ export default function LeadRequestForm({ companyId, companyName }: LeadRequestF
                 phone: '',
                 address: '',
                 expected_capacity: '',
+                notes: '',
             });
         } catch (err: any) {
             setError(err.message || '요청 중 오류가 발생했습니다.');
@@ -151,6 +154,18 @@ export default function LeadRequestForm({ companyId, companyName }: LeadRequestF
                         placeholder="예: 3kW, 10kW 이상 등"
                         value={formData.expected_capacity}
                         onChange={(e) => setFormData({ ...formData, expected_capacity: e.target.value })}
+                    />
+                </div>
+
+                <div>
+                    <label htmlFor="notes" className="block text-sm font-semibold text-gray-700 mb-2">기타 요청사항 (선택)</label>
+                    <textarea
+                        id="notes"
+                        rows={4}
+                        className="w-full rounded-lg border border-gray-300 p-3 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all outline-none text-gray-900 placeholder:text-gray-500 resize-none"
+                        placeholder="설치 장소의 특이사항이나 궁금하신 점을 자유롭게 적어주세요."
+                        value={formData.notes}
+                        onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                     />
                 </div>
 

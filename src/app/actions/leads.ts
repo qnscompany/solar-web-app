@@ -74,6 +74,7 @@ export async function sendLeadNotificationAction({ leadId, companyId }: SendLead
                             <li><strong>📞 연락처:</strong> ${lead.phone}</li>
                             <li><strong>📍 주소:</strong> ${lead.address}</li>
                             <li><strong>⚡ 희망 용량:</strong> ${lead.expected_capacity}</li>
+                            ${lead.notes ? `<li style="margin-top: 10px; padding-top: 10px; border-top: 1px dashed #cbd5e1;"><strong>📝 기타 요청사항:</strong><br/><span style="color: #334155;">${lead.notes.replace(/\n/g, '<br/>')}</span></li>` : ''}
                         </ul>
                     </div>
                     <p style="font-size: 14px; color: #64748b;">
