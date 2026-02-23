@@ -15,13 +15,18 @@ import {
 } from 'lucide-react';
 import SolarCarousel from '@/components/solar-carousel/SolarCarousel';
 
+/**
+ * 마케팅 랜딩 페이지 컴포넌트
+ * 서비스의 가치를 전달하고 사용자의 전환(견적 요청)을 유도하는 플랫폼의 첫 관문입니다.
+ */
 export default function MarketingLandingPage() {
     return (
         <div className="min-h-screen bg-slate-50 font-sans text-slate-900 overflow-x-hidden">
-            {/* Navigation (Sticky Navbar를 레이아웃에서 사용하므로 여기서는 제거하거나 통일) */}
-            {/* layout.tsx에서 상시 노출되는 Navbar가 있으므로 중복을 피하기 위해 여기서는 제거하거나 투명하게 처리합니다. */}
-
-            {/* Hero Section */}
+            {/* -----------------------------------------------------------------
+                [SECTION] Hero Section
+                - 방문자의 첫 시선을 사로잡는 강력한 헤드라인과 CTA 제공
+                - 신뢰할 수 있는 데이터(배지)와 시각적 요소(Carousel) 배치
+            ----------------------------------------------------------------- */}
             <section className="relative pt-32 pb-20 md:pt-48 md:pb-32 bg-white overflow-hidden">
                 <div className="absolute top-0 right-0 w-1/2 h-full bg-orange-50 -skew-x-12 translate-x-1/4 -z-10" />
                 <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-2 gap-12 items-center">
@@ -81,7 +86,10 @@ export default function MarketingLandingPage() {
                 </div>
             </section>
 
-            {/* Target Separation Section */}
+            {/* -----------------------------------------------------------------
+                [SECTION] Target Separation (User Flow Split)
+                - 소비자(견적 요청)와 업체(입점 신청)의 경로를 명확히 분리
+            ----------------------------------------------------------------- */}
             <section className="py-20 bg-slate-50 border-y border-slate-100">
                 <div className="max-w-7xl mx-auto px-6">
                     <div className="grid md:grid-cols-2 gap-8 text-left">
@@ -142,7 +150,10 @@ export default function MarketingLandingPage() {
                 </div>
             </section>
 
-            {/* Footer */}
+            {/* -----------------------------------------------------------------
+                [SECTION] Footer
+                - 플랫폼 정보, 정책 링크, 법적 고지사항 포함
+            ----------------------------------------------------------------- */}
             <footer className="bg-slate-950 py-20 text-white">
                 <div className="max-w-7xl mx-auto px-6">
                     <div className="grid md:grid-cols-2 gap-12 items-start border-b border-white/10 pb-16 mb-12">
