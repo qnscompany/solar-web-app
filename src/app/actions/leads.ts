@@ -1,7 +1,7 @@
 'use server';
 
 import { Resend } from 'resend';
-import { createClient } from '@/utils/supabase/server';
+import { createAdminClient } from '@/utils/supabase/admin';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -11,7 +11,7 @@ interface SendLeadNotificationParams {
 }
 
 export async function sendLeadNotificationAction({ leadId, companyId }: SendLeadNotificationParams) {
-    const supabase = await createClient();
+    const supabase = createAdminClient();
 
     try {
         console.log(`[Email Notification] Starting for Lead ID: ${leadId}, Company ID: ${companyId}`);
