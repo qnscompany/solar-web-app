@@ -152,7 +152,7 @@ export default function MarketingLandingPage() {
                                 <span className="text-2xl font-black tracking-tight uppercase">{"쨍하고"}</span>
                             </div>
                             <p className="text-slate-400 font-medium max-w-sm mb-8 leading-relaxed">
-                                {"충남 지역 모든 시공업체를 한눈에.\n에너지공단 인증 업체만 엄선하여 무료 견적 비교 서비스를 제공합니다."}
+                                {"내 주변 시공업체를 한눈에.\n한국에너지공단 인증 업체만 엄선하여 무료 견적 비교 서비스를 제공합니다."}
                             </p>
                         </div>
                         <div className="flex flex-col md:items-end gap-6 text-sm font-bold">
