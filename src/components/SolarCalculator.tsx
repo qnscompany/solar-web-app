@@ -88,7 +88,8 @@ export default function SolarCalculator() {
                         {" 시스템이 적합합니다."}
                     </p>
                     <p className="text-lg md:text-xl font-bold text-slate-600 mt-4 flex items-center justify-center gap-2">
-                        {result.saving} 절감 예상 <Sparkles className="text-yellow-500 w-5 h-5 fill-current" />
+                        {loc === 'factory' ? '상담 후 예상 절감 금액 산출' : `${result.saving} 절감 예상`}
+                        <Sparkles className="text-yellow-500 w-5 h-5 fill-current" />
                     </p>
                 </div>
 
