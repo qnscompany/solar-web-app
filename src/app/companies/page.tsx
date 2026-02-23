@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Script from 'next/script';
 import { supabase } from '@/lib/supabase';
@@ -41,6 +42,7 @@ function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: numbe
 }
 
 export default function CompaniesPage() {
+    const router = useRouter();
     const [companies, setCompanies] = useState<Company[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -169,34 +171,66 @@ export default function CompaniesPage() {
                 const popupContent = document.createElement('div');
                 popupContent.className = 'bg-white rounded-lg shadow-xl border border-gray-100 min-w-[220px] overflow-hidden';
                 popupContent.style.transform = 'translateY(-50px)';
+                popupContent.style.position = 'relative';
 
-                // HTML 문자열로 팝업 내부 구성
-                popupContent.innerHTML = `
-                    <div class="p-4" style="font-family: sans-serif;">
-                        <div class="flex items-center gap-1 mb-1" style="display: flex; align-items: center; gap: 4px; margin-bottom: 4px;">
-                            <span style="font-size: 14px;">🌟</span>
-                            <h4 style="margin: 0; font-size: 14px; font-weight: 900; color: #0f172a;">${company.company_name}</h4>
-                        </div>
-                        <div style="display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 700; color: #64748b; margin-bottom: 8px;">
-                            <span style="color: #eab308;">⭐ 4.8점</span>
-                            <span>·</span>
-                            <span>시공 47건</span>
-                        </div>
-                        <div style="display: flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 500; color: #94a3b8; margin-bottom: 4px;">
-                            <span>📍</span>
-                            <span>${company.headquarters_address.split(' ').slice(0, 2).join(' ')}</span>
-                        </div>
-                        <div style="display: flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 500; color: #94a3b8; margin-bottom: 16px;">
-                            <span>🔧</span>
-                            <span>보증 15년 · 3~100kW</span>
-                        </div>
-                        <a href="/companies/${company.id}" style="display: block; width: 100%; text-align: center; padding: 8px 0; background-color: #0f172a; color: white; font-size: 11px; font-weight: 900; border-radius: 6px; text-decoration: none; transition: background-color 0.2s;">
-                            상세보기 →
-                        </a>
+                // 클릭 이벤트가 지도로 전파되는 것을 방지
+                popupContent.onclick = (e) => e.stopPropagation();
+                popupContent.onmousedown = (e) => e.stopPropagation();
+
+                // [내부 래퍼 생성]
+                const innerWrapper = document.createElement('div');
+                innerWrapper.style.padding = '16px';
+                innerWrapper.style.fontFamily = 'sans-serif';
+
+                // [헤더: 업체명]
+                innerWrapper.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 4px; margin-bottom: 4px;">
+                        <span style="font-size: 14px;">🌟</span>
+                        <h4 style="margin: 0; font-size: 14px; font-weight: 900; color: #0f172a;">${company.company_name}</h4>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 700; color: #64748b; margin-bottom: 8px;">
+                        <span style="color: #eab308;">⭐ 4.8점</span>
+                        <span>·</span>
+                        <span>시공 47건</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 500; color: #94a3b8; margin-bottom: 4px;">
+                        <span>📍</span>
+                        <span>${company.headquarters_address.split(' ').slice(0, 2).join(' ')}</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 500; color: #94a3b8; margin-bottom: 16px;">
+                        <span>🔧</span>
+                        <span>보증 15년 · 3~100kW</span>
                     </div>
                 `;
 
-                // Tailwind 클래스가 CustomOverlay 내에서 잘 작동하지 않을 수 있으므로 인라인 스타일 병행
+                // [버튼 직접 생성 및 이벤트 바인딩]
+                const detailBtn = document.createElement('button');
+                detailBtn.innerText = '상세보기 →';
+                detailBtn.style.cssText = `
+                    display: block; width: 100%; text-align: center; padding: 8px 0; 
+                    background-color: #0f172a; color: white; font-size: 11px; font-weight: 900; 
+                    border-radius: 6px; cursor: pointer; border: none; transition: background-color 0.2s;
+                `;
+
+                detailBtn.onclick = (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('Directly pushing to:', `/companies/${company.id}`);
+                    router.push(`/companies/${company.id}`);
+                };
+
+                innerWrapper.appendChild(detailBtn);
+                popupContent.appendChild(innerWrapper);
+
+                // [말풍선 꼬리표]
+                const tail = document.createElement('div');
+                tail.style.cssText = `
+                    position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%); 
+                    width: 0; height: 0; border-left: 8px solid transparent; 
+                    border-right: 8px solid transparent; border-top: 8px solid white;
+                `;
+                popupContent.appendChild(tail);
+
                 const detailOverlay = new kakao.maps.CustomOverlay({
                     position: position,
                     content: popupContent,
@@ -204,7 +238,8 @@ export default function CompaniesPage() {
                     zIndex: 10
                 });
 
-                markerContent.onclick = () => {
+                markerContent.onclick = (e) => {
+                    if (e) e.stopPropagation();
                     if (activeOverlay.current) {
                         activeOverlay.current.setMap(null);
                     }
