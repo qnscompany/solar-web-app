@@ -171,13 +171,27 @@ export default function LeadRequestForm({ companyId, companyName }: LeadRequestF
 
                 {error && <p className="text-red-500 text-sm font-medium">{error}</p>}
 
+                <div className="flex items-start gap-3 bg-slate-50 p-4 rounded-xl border border-slate-100">
+                    <div className="flex items-center h-5">
+                        <input
+                            id="privacy-consent"
+                            type="checkbox"
+                            required
+                            className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                        />
+                    </div>
+                    <label htmlFor="privacy-consent" className="text-sm font-bold text-slate-500 leading-tight">
+                        {"개인정보처리방침에 동의합니다 (필수)"}
+                    </label>
+                </div>
+
                 <button
                     type="submit"
                     disabled={isSubmitting}
-                    className={`w-full rounded-xl py-4 text-lg font-bold text-white transition-all shadow-md ${isSubmitting ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 active:transform active:scale-[0.98]'
+                    className={`w-full rounded-2xl py-5 text-xl font-black text-white transition-all shadow-xl ${isSubmitting ? 'bg-slate-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 hover:shadow-blue-200 active:transform active:scale-[0.98]'
                         }`}
                 >
-                    {isSubmitting ? '요청 중...' : `${companyName}에 견적 요청하기`}
+                    {isSubmitting ? '요청 전송 중...' : `${companyName} 무료 견적 받기`}
                 </button>
             </form>
         </section>

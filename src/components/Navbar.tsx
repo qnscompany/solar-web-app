@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { Sun } from 'lucide-react';
 
 export default function Navbar() {
     return (
@@ -8,24 +9,10 @@ export default function Navbar() {
             <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
                 <div className="flex items-center">
                     <Link href="/" className="flex items-center gap-2 group">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-yellow-400 shadow-sm transition-transform group-hover:scale-105 active:scale-95">
-                            {/* 태양 모양 로고 (SVG) */}
-                            <svg
-                                width="24"
-                                height="24"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="white"
-                                strokeWidth="2.5"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                className="drop-shadow-sm"
-                            >
-                                <circle cx="12" cy="12" r="4" fill="white" fillOpacity="0.2" />
-                                <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 6.34l-1.41 1.41" />
-                            </svg>
+                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-500 shadow-lg shadow-orange-100 transition-transform group-hover:scale-105 active:scale-95">
+                            <Sun className="text-white w-6 h-6" />
                         </div>
-                        <span className="text-xl font-bold tracking-tight text-gray-900 sm:text-2xl">
+                        <span className="text-xl font-black tracking-tight text-slate-900 sm:text-2xl uppercase">
                             쨍하고
                         </span>
                     </Link>
@@ -40,12 +27,18 @@ export default function Navbar() {
                     </Link>
                 </nav>
 
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-3">
                     <Link
                         href="/login"
-                        className="rounded-lg px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
+                        className="rounded-lg px-3 py-2 text-sm font-bold text-slate-400 hover:text-slate-600 hover:bg-slate-50 transition-colors"
                     >
-                        로그인
+                        시공사 로그인
+                    </Link>
+                    <Link
+                        href="/companies"
+                        className="rounded-full bg-slate-900 px-5 py-2 text-sm font-black text-white shadow-md hover:bg-slate-800 transition-all active:scale-95"
+                    >
+                        무료 비교
                     </Link>
                 </div>
             </div>

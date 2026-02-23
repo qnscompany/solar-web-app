@@ -9,28 +9,17 @@ import {
     UserX,
     CheckCircle2,
     ArrowRight,
-    Sun
+    Sun,
+    Star,
+    Quote
 } from 'lucide-react';
 import SolarCarousel from '@/components/solar-carousel/SolarCarousel';
 
 export default function MarketingLandingPage() {
     return (
         <div className="min-h-screen bg-slate-50 font-sans text-slate-900 overflow-x-hidden">
-            {/* Navigation */}
-            <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-200">
-                <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-                    <Link href="/" className="flex items-center gap-2">
-                        <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center shadow-lg shadow-orange-200">
-                            <Sun className="text-white w-5 h-5" />
-                        </div>
-                        <span className="text-xl font-black tracking-tight uppercase">{"쨍하고"}</span>
-                    </Link>
-                    <div className="flex items-center gap-4">
-                        <Link href="/login" className="text-sm font-bold text-slate-600 hover:text-orange-500 transition-colors">{"시공사 로그인"}</Link>
-                        <Link href="/companies" className="px-5 py-2 bg-slate-900 text-white text-sm font-bold rounded-full hover:bg-slate-800 transition-all shadow-md">{"무료 비교"}</Link>
-                    </div>
-                </div>
-            </nav>
+            {/* Navigation (Sticky Navbar를 레이아웃에서 사용하므로 여기서는 제거하거나 통일) */}
+            {/* layout.tsx에서 상시 노출되는 Navbar가 있으므로 중복을 피하기 위해 여기서는 제거하거나 투명하게 처리합니다. */}
 
             {/* Hero Section */}
             <section className="relative pt-32 pb-20 md:pt-48 md:pb-32 bg-white overflow-hidden">
@@ -46,10 +35,32 @@ export default function MarketingLandingPage() {
                         <p className="text-lg md:text-xl text-slate-500 leading-relaxed mb-10 font-medium">
                             {"우리 동네 검증된 시공업체만 모았습니다. 시공능력, A/S, 평판을 한눈에 비교하세요."}
                         </p>
-                        <Link href="/companies" className="group inline-flex items-center gap-3 px-8 py-5 bg-orange-500 text-white rounded-2xl font-black text-xl hover:bg-orange-600 shadow-xl shadow-orange-200 transition-all">
-                            {"우리 동네 업체 비교하기"}
-                            <ArrowRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
-                        </Link>
+                        <div className="flex flex-col gap-4">
+                            <Link href="/companies" className="group inline-flex items-center justify-center gap-3 px-8 py-5 bg-yellow-400 text-slate-900 rounded-2xl font-black text-xl hover:bg-yellow-500 shadow-xl shadow-yellow-200 transition-all">
+                                {"우리 동네 업체 무료 비교하기 →"}
+                            </Link>
+                            <p className="text-sm font-bold text-slate-400 ml-2">
+                                {"※ 로그인 없이 바로 비교 가능합니다"}
+                            </p>
+                        </div>
+
+                        {/* Trust Statistics Badges */}
+                        <div className="mt-16 flex flex-wrap gap-4 md:gap-8 border-t border-slate-100 pt-10">
+                            <div className="flex flex-col">
+                                <span className="text-2xl md:text-3xl font-black text-slate-900">{"12개"}</span>
+                                <span className="text-xs md:text-sm font-bold text-slate-400">{"입점 업체"}</span>
+                            </div>
+                            <div className="w-px h-10 bg-slate-200 self-center hidden sm:block" />
+                            <div className="flex flex-col">
+                                <span className="text-2xl md:text-3xl font-black text-slate-900">{"247건"}</span>
+                                <span className="text-xs md:text-sm font-bold text-slate-400">{"누적 견적"}</span>
+                            </div>
+                            <div className="w-px h-10 bg-slate-200 self-center hidden sm:block" />
+                            <div className="flex flex-col">
+                                <span className="text-2xl md:text-3xl font-black text-slate-900">{"4.7점"}</span>
+                                <span className="text-xs md:text-sm font-bold text-slate-400">{"평균 별점"}</span>
+                            </div>
+                        </div>
                     </div>
 
                     <div className="relative">
@@ -97,18 +108,33 @@ export default function MarketingLandingPage() {
             </section>
 
             {/* Footer */}
-            <footer className="bg-slate-900 py-16 text-center text-white">
+            <footer className="bg-slate-950 py-20 text-white">
                 <div className="max-w-7xl mx-auto px-6">
-                    <div className="flex flex-col items-center gap-8 border-b border-white/5 pb-12 mb-12">
-                        <div className="flex items-center gap-2">
-                            <Sun className="text-orange-500 w-8 h-8" />
-                            <span className="text-2xl font-black tracking-tight uppercase">{"쨍하고"}</span>
+                    <div className="grid md:grid-cols-2 gap-12 items-start border-b border-white/10 pb-16 mb-12">
+                        <div>
+                            <div className="flex items-center gap-2 mb-6">
+                                <Sun className="text-orange-500 w-8 h-8" />
+                                <span className="text-2xl font-black tracking-tight uppercase">{"쨍하고"}</span>
+                            </div>
+                            <p className="text-slate-400 font-medium max-w-sm mb-8 leading-relaxed">
+                                {"충남 지역 모든 시공업체를 한눈에.\n에너지공단 인증 업체만 엄선하여 무료 견적 비교 서비스를 제공합니다."}
+                            </p>
                         </div>
-                        <Link href="/companies" className="px-10 py-5 bg-orange-500 text-white rounded-2xl font-black text-xl hover:bg-orange-600 transition-all">
-                            {"무료 비교 시작하기"}
-                        </Link>
+                        <div className="flex flex-col md:items-end gap-6 text-sm font-bold">
+                            <div className="flex gap-8 text-slate-300">
+                                <Link href="/companies" className="hover:text-white transition-colors">{"업체 찾기"}</Link>
+                                <Link href="/privacy" className="hover:text-white transition-colors">{"개인정보처리방침"}</Link>
+                                <Link href="/terms" className="hover:text-white transition-colors">{"이용약관"}</Link>
+                            </div>
+                            <Link href="/companies" className="px-8 py-4 bg-orange-500 text-white rounded-2xl font-black text-md hover:bg-orange-600 transition-all shadow-lg shadow-orange-900/20">
+                                {"무료 비교 시작하기 →"}
+                            </Link>
+                        </div>
                     </div>
-                    <p className="text-slate-500 text-sm font-medium">{"© 2026 ZzangHago Inc. All rights reserved."}</p>
+                    <div className="flex flex-col md:flex-row justify-between items-center gap-6 text-slate-500 text-[13px] font-bold">
+                        <p>{"© 2026 ZzangHago Inc. All rights reserved."}</p>
+                        <p>{"충청남도 태양광 정보 공유 플랫폼 쨍하고"}</p>
+                    </div>
                 </div>
             </footer>
         </div>
