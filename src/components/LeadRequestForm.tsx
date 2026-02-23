@@ -9,7 +9,12 @@ interface LeadRequestFormProps {
     companyName: string;
 }
 
+/**
+ * 고객 견적 요청 폼 컴포넌트
+ * 업체 상세 페이지에서 사용자가 견적을 요청할 때 사용됩니다.
+ */
 export default function LeadRequestForm({ companyId, companyName }: LeadRequestFormProps) {
+    // [상태 관리] 사용자 입력 데이터 및 UI 상태(제출 중, 성공 여부, 에러)
     const [formData, setFormData] = useState({
         customer_name: '',
         phone: '',
@@ -21,20 +26,27 @@ export default function LeadRequestForm({ companyId, companyName }: LeadRequestF
     const [isSuccess, setIsSuccess] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
+    /**
+     * 폼 제출 이벤트 핸들러
+     * 1. DB에 견적 요청 저장
+     * 2. 해당 업체에 알림 이메일 발송 (Server Action 호출)
+     */
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsSubmitting(true);
         setError(null);
 
         try {
-            console.log('Submitting lead request to company:', companyId);
-            const newLeadId = crypto.randomUUID(); // 클라이언트에서 ID 직접 생성
+            // [STEP 1] 고유 리드 ID 생성
+            // 서버 응답 속도를 높이기 위해 클라이언트에서 UUID를 미리 생성하여 전달합니다.
+            const newLeadId = crypto.randomUUID();
 
-            const { data, error: submitError } = await supabase
+            // [STEP 2] Supabase에 데이터 저장
+            const { error: submitError } = await supabase
                 .from('lead_requests')
                 .insert([
                     {
-                        id: newLeadId, // 명시적으로 ID 지정
+                        id: newLeadId,
                         company_id: companyId,
                         customer_name: formData.customer_name,
                         phone: formData.phone,
@@ -44,31 +56,29 @@ export default function LeadRequestForm({ companyId, companyName }: LeadRequestF
                         status: 'pending',
                     },
                 ]);
-            // .select() 제거 (RLS 때문에 빈 값이 올 수 있음)
 
             if (submitError) {
-                console.error('Lead submission error:', submitError);
+                console.error('[LeadForm] DB Insertion Error:', submitError);
                 throw submitError;
             }
 
-            console.log('Lead submitted successfully with ID:', newLeadId);
-
-            // 신규 리드 이메일 알림 발송 (생성한 ID를 바로 사용)
+            // [STEP 3] 업체 담당자에게 이메일 알림 발송 (비동기 수행)
+            // 발송 실패가 전체 견적 신청 프로세스를 중단시키지 않도록 별도의 try-catch로 감쌉니다.
             try {
-                console.log('[LeadForm] Calling notification action for ID:', newLeadId);
                 const result = await sendLeadNotificationAction({
                     leadId: newLeadId,
                     companyId: companyId
                 });
-                if (result.success) {
-                    console.log('[LeadForm] Notification sent successfully!');
-                } else {
-                    console.error('[LeadForm] Notification failed logic:', result.error);
+
+                if (!result.success) {
+                    // 내부 경고 로그용 (사용자에게는 성공 알림 출력)
+                    console.warn('[LeadForm] Email Notification skipped/failed:', result.error);
                 }
             } catch (notiErr) {
-                console.error('[LeadForm] Notification action failed:', notiErr);
+                console.error('[LeadForm] Critical error in notification action:', notiErr);
             }
 
+            // [STEP 4] UI 성공 상태로 전환 및 데이터 초기화
             setIsSuccess(true);
             setFormData({
                 customer_name: '',
@@ -78,7 +88,7 @@ export default function LeadRequestForm({ companyId, companyName }: LeadRequestF
                 notes: '',
             });
         } catch (err: any) {
-            setError(err.message || '요청 중 오류가 발생했습니다.');
+            setError(err.message || '요청 중 오류가 발생했습니다. 다시 시도해 주세요.');
         } finally {
             setIsSubmitting(false);
         }
