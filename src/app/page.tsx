@@ -54,7 +54,7 @@ export default function MarketingLandingPage() {
                         <div className="mt-16 flex flex-wrap gap-4 md:gap-8 border-t border-slate-100 pt-10">
                             <div className="flex flex-col">
                                 <span className="text-2xl md:text-3xl font-black text-slate-900">{"12개"}</span>
-                                <span className="text-xs md:text-sm font-bold text-slate-400">{"충남 입점 업체"}</span>
+                                <span className="text-xs md:text-sm font-bold text-slate-400">{"전국 입점업체"}</span>
                             </div>
                             <div className="w-px h-10 bg-slate-200 self-center hidden sm:block" />
                             <div className="flex flex-col">
@@ -119,7 +119,7 @@ export default function MarketingLandingPage() {
                             </div>
                             <h3 className="text-2xl font-black mb-4">{"견적을 원하시나요?"}</h3>
                             <p className="text-slate-500 font-medium mb-8 leading-relaxed">
-                                {"충남 지역 최고의 시공업체들이 여러분의 견적을 기다리고 있습니다. 믿을 수 있는 가격을 확인하세요."}
+                                {"지역 최고의 시공업체들이 여러분의 견적을 기다리고 있습니다. 믿을 수 있는 가격을 확인하세요."}
                             </p>
                             <Link href="/companies" className="inline-flex items-center gap-2 text-blue-600 font-black hover:gap-3 transition-all underline decoration-2 underline-offset-4">
                                 {"무료 견적 시작하기"} <ArrowRight className="w-5 h-5" />
@@ -177,7 +177,7 @@ export default function MarketingLandingPage() {
                 <div className="max-w-7xl mx-auto px-6">
                     <div className="text-center mb-16">
                         <h2 className="text-3xl md:text-4xl font-black text-slate-900 mb-4">{"이웃들의 실제 설치 후기"}</h2>
-                        <p className="text-slate-500 font-bold">{"충남 지역 주민들이 직접 남겨주신 소중한 경험입니다."}</p>
+                        <p className="text-slate-500 font-bold">{"지역 주민들이 직접 남겨주신 소중한 경험입니다."}</p>
                     </div>
                     <div className="grid md:grid-cols-3 gap-8">
                         {[
@@ -245,7 +245,7 @@ export default function MarketingLandingPage() {
                                 <span className="text-2xl font-black tracking-tight uppercase">{"쨍하고"}</span>
                             </div>
                             <p className="text-slate-400 font-medium max-w-sm mb-8 leading-relaxed">
-                                {"내 주변 시공업체를 한눈에.\n한국에너지공단 인증 업체만 엄선하여 무료 견적 비교 서비스를 제공합니다."}
+                                {"내 주변 시공업체를 한눈에. 한국에너지공단 인증 업체만 엄선하여\n무료 견적 비교 서비스를 제공합니다."}
                             </p>
                         </div>
                         <div className="flex flex-col md:items-end gap-6 text-sm font-bold">
