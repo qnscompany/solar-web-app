@@ -260,7 +260,7 @@ export default function MarketingLandingPage() {
                         </div>
                     </div>
                     <div className="flex flex-col md:flex-row justify-between items-center gap-6 text-slate-500 text-[13px] font-bold">
-                        <p>{"© 2026 ZzangHago Inc. All rights reserved."}</p>
+                        <p>{"© 2026 Zzaenghago Inc. All rights reserved."}</p>
                         <p>{"태양광 정보 공유 플랫폼 쨍하고"}</p>
                     </div>
                 </div>
