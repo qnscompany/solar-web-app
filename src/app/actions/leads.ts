@@ -16,23 +16,31 @@ export async function sendLeadNotificationAction({ leadId, companyId }: SendLead
     try {
         console.log(`[Email Notification] Starting for Lead ID: ${leadId}, Company ID: ${companyId}`);
 
-        // 1. 리드 상세 정보 및 업체 알림 이메일 조회
+        // 1. 리드 상세 정보 및 업체 알림 이메일 조회 (상세 로그 추가)
         const { data: lead, error: leadError } = await supabase
             .from('lead_requests')
             .select(`
                 *,
                 company:company_profiles (
+                    id,
                     company_name,
                     notification_email
                 )
             `)
             .eq('id', leadId)
-            .single();
+            .maybeSingle();
 
-        if (leadError || !lead) {
-            console.error('[Email Notification] Error fetching lead:', leadError || 'Lead not found');
-            return { success: false, error: '리드 정보를 찾을 수 없습니다.' };
+        if (leadError) {
+            console.error('[Email Notification] Supabase query error:', leadError);
+            return { success: false, error: `DB 조회 오류: ${leadError.message}` };
         }
+
+        if (!lead) {
+            console.error(`[Email Notification] Lead not found for ID: ${leadId}`);
+            return { success: false, error: '해당 리드 정보를 찾을 수 없습니다.' };
+        }
+
+        console.log('[Email Notification] Lead Data Fetched:', JSON.stringify(lead, null, 2));
 
         const company = lead.company as any;
         const targetEmail = company?.notification_email;
@@ -78,11 +86,11 @@ export async function sendLeadNotificationAction({ leadId, companyId }: SendLead
         });
 
         if (sendError) {
-            console.error('Resend email sending failed:', sendError);
-            return { success: false, error: '이메일 발송에 실패했습니다.' };
+            console.error('[Email Notification] Resend API error:', sendError);
+            return { success: false, error: `이메일 발송 API 오류: ${sendError.message}` };
         }
 
-        console.log('Notification email sent successfully:', data);
+        console.log('[Email Notification] SUCCESS! Email ID:', data?.id);
         return { success: true, data };
 
     } catch (err: any) {

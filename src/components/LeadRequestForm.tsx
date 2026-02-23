@@ -56,7 +56,12 @@ export default function LeadRequestForm({ companyId, companyName }: LeadRequestF
                         leadId: data[0].id,
                         companyId: companyId
                     });
-                    console.log('[LeadForm] Notification result:', result);
+                    if (result.success) {
+                        console.log('[LeadForm] Notification sent successfully!');
+                    } else {
+                        console.error('[LeadForm] Notification failed logic:', result.error);
+                        // 사용자에게는 보이지 않게 콘솔에만 기록
+                    }
                 } catch (notiErr) {
                     console.error('[LeadForm] Notification action failed:', notiErr);
                 }
