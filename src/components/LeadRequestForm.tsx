@@ -1,5 +1,4 @@
-'use client';
-
+import Link from 'next/link';
 import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { sendLeadNotificationAction } from '@/app/actions/leads';
@@ -22,23 +21,31 @@ export default function LeadRequestForm({ companyId, companyName }: LeadRequestF
         expected_capacity: '',
         notes: '',
     });
+    const [isAgreed, setIsAgreed] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
     /**
      * 폼 제출 이벤트 핸들러
-     * 1. DB에 견적 요청 저장
-     * 2. 해당 업체에 알림 이메일 발송 (Server Action 호출)
+     * 1. 개인정보 동의 여부 체크
+     * 2. DB에 견적 요청 저장
+     * 3. 해당 업체에 알림 이메일 발송 (Server Action 호출)
      */
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        // [STEP 0] 개인정보 동의 체크
+        if (!isAgreed) {
+            setError('개인정보 수집·이용에 동의해주세요.');
+            return;
+        }
+
         setIsSubmitting(true);
         setError(null);
 
         try {
             // [STEP 1] 고유 리드 ID 생성
-            // 서버 응답 속도를 높이기 위해 클라이언트에서 UUID를 미리 생성하여 전달합니다.
             const newLeadId = crypto.randomUUID();
 
             // [STEP 2] Supabase에 데이터 저장
@@ -62,8 +69,7 @@ export default function LeadRequestForm({ companyId, companyName }: LeadRequestF
                 throw submitError;
             }
 
-            // [STEP 3] 업체 담당자에게 이메일 알림 발송 (비동기 수행)
-            // 발송 실패가 전체 견적 신청 프로세스를 중단시키지 않도록 별도의 try-catch로 감쌉니다.
+            // [STEP 3] 업체 담당자에게 이메일 알림 발송
             try {
                 const result = await sendLeadNotificationAction({
                     leadId: newLeadId,
@@ -71,7 +77,6 @@ export default function LeadRequestForm({ companyId, companyName }: LeadRequestF
                 });
 
                 if (!result.success) {
-                    // 내부 경고 로그용 (사용자에게는 성공 알림 출력)
                     console.warn('[LeadForm] Email Notification skipped/failed:', result.error);
                 }
             } catch (notiErr) {
@@ -87,6 +92,7 @@ export default function LeadRequestForm({ companyId, companyName }: LeadRequestF
                 expected_capacity: '',
                 notes: '',
             });
+            setIsAgreed(false);
         } catch (err: any) {
             setError(err.message || '요청 중 오류가 발생했습니다. 다시 시도해 주세요.');
         } finally {
@@ -179,26 +185,33 @@ export default function LeadRequestForm({ companyId, companyName }: LeadRequestF
                     />
                 </div>
 
-                {error && <p className="text-red-500 text-sm font-medium">{error}</p>}
+                {error && <p className="text-red-500 text-sm font-bold bg-red-50 p-3 rounded-lg border border-red-100">{error}</p>}
 
                 <div className="flex items-start gap-3 bg-slate-50 p-4 rounded-xl border border-slate-100">
                     <div className="flex items-center h-5">
                         <input
                             id="privacy-consent"
                             type="checkbox"
-                            required
-                            className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                            checked={isAgreed}
+                            onChange={(e) => {
+                                setIsAgreed(e.target.checked);
+                                if (e.target.checked) setError(null);
+                            }}
+                            className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"
                         />
                     </div>
-                    <label htmlFor="privacy-consent" className="text-sm font-bold text-slate-500 leading-tight">
-                        {"개인정보처리방침에 동의합니다 (필수)"}
+                    <label htmlFor="privacy-consent" className="text-sm font-bold text-slate-500 leading-tight cursor-pointer">
+                        <Link href="/privacy" className="text-blue-600 underline underline-offset-2 hover:text-blue-700">{"[개인정보처리방침]"}</Link>
+                        {"에 동의합니다. (필수)"}
                     </label>
                 </div>
 
                 <button
                     type="submit"
                     disabled={isSubmitting}
-                    className={`w-full rounded-2xl py-5 text-xl font-black text-white transition-all shadow-xl ${isSubmitting ? 'bg-slate-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 hover:shadow-blue-200 active:transform active:scale-[0.98]'
+                    className={`w-full rounded-2xl py-5 text-xl font-black text-white transition-all shadow-xl ${isSubmitting ? 'bg-slate-400 cursor-not-allowed' :
+                            !isAgreed ? 'bg-slate-300 cursor-pointer hover:bg-slate-400' :
+                                'bg-blue-600 hover:bg-blue-700 hover:shadow-blue-200 active:transform active:scale-[0.98]'
                         }`}
                 >
                     {isSubmitting ? '요청 전송 중...' : `${companyName} 무료 견적 받기`}
