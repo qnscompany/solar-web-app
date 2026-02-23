@@ -169,20 +169,30 @@ export default function CompaniesPage() {
 
                 // 상세 정보 팝업 (CustomOverlay)
                 const popupContent = document.createElement('div');
-                popupContent.className = 'bg-white rounded-lg shadow-xl border border-gray-100 min-w-[220px] overflow-hidden';
-                popupContent.style.transform = 'translateY(-50px)';
-                popupContent.style.position = 'relative';
+                popupContent.className = 'bg-white rounded-lg shadow-2xl border border-gray-100 min-w-[220px] overflow-hidden';
+                popupContent.style.cssText = `
+                    transform: translateY(-50px);
+                    position: relative;
+                    z-index: 1000;
+                    pointer-events: auto;
+                `;
 
-                // 클릭 이벤트가 지도로 전파되는 것을 방지
-                popupContent.onclick = (e) => e.stopPropagation();
-                popupContent.onmousedown = (e) => e.stopPropagation();
+                // 클릭 이벤트가 지도로 전파되는 것을 차단 (가장 중요한 부분)
+                const stopProp = (e: any) => {
+                    if (e.stopPropagation) e.stopPropagation();
+                    if (e.cancelBubble !== undefined) e.cancelBubble = true;
+                };
+                popupContent.onclick = stopProp;
+                popupContent.onmousedown = stopProp;
+                popupContent.onmouseup = stopProp;
+                popupContent.ontouchstart = stopProp;
 
                 // [내부 래퍼 생성]
                 const innerWrapper = document.createElement('div');
                 innerWrapper.style.padding = '16px';
                 innerWrapper.style.fontFamily = 'sans-serif';
 
-                // [헤더: 업체명]
+                // [헤더: 업체명 및 정보]
                 innerWrapper.innerHTML = `
                     <div style="display: flex; align-items: center; gap: 4px; margin-bottom: 4px;">
                         <span style="font-size: 14px;">🌟</span>
@@ -207,17 +217,21 @@ export default function CompaniesPage() {
                 const detailBtn = document.createElement('button');
                 detailBtn.innerText = '상세보기 →';
                 detailBtn.style.cssText = `
-                    display: block; width: 100%; text-align: center; padding: 8px 0; 
-                    background-color: #0f172a; color: white; font-size: 11px; font-weight: 900; 
-                    border-radius: 6px; cursor: pointer; border: none; transition: background-color 0.2s;
+                    display: block; width: 100%; text-align: center; padding: 10px 0; 
+                    background-color: #0f172a; color: white; font-size: 12px; font-weight: 900; 
+                    border-radius: 8px; cursor: pointer; border: none; transition: all 0.2s;
+                    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
                 `;
 
-                detailBtn.onclick = (e) => {
+                // 마우스와 클릭 이벤트를 모두 처리하여 반응성 극대화
+                const navigateToDetail = (e: any) => {
                     e.preventDefault();
                     e.stopPropagation();
-                    console.log('Directly pushing to:', `/companies/${company.id}`);
+                    console.log('Navigating to:', `/companies/${company.id}`);
                     router.push(`/companies/${company.id}`);
                 };
+
+                detailBtn.onclick = navigateToDetail;
 
                 innerWrapper.appendChild(detailBtn);
                 popupContent.appendChild(innerWrapper);
@@ -228,6 +242,7 @@ export default function CompaniesPage() {
                     position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%); 
                     width: 0; height: 0; border-left: 8px solid transparent; 
                     border-right: 8px solid transparent; border-top: 8px solid white;
+                    filter: drop-shadow(0 4px 3px rgba(0,0,0,0.1));
                 `;
                 popupContent.appendChild(tail);
 
