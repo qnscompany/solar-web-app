@@ -11,6 +11,7 @@ import {
     ArrowRight,
     Sun
 } from 'lucide-react';
+import SolarCarousel from '@/components/solar-carousel/SolarCarousel';
 
 export default function MarketingLandingPage() {
     return (
@@ -25,7 +26,7 @@ export default function MarketingLandingPage() {
                         <span className="text-xl font-black tracking-tight uppercase">{"쨍하고"}</span>
                     </Link>
                     <div className="flex items-center gap-4">
-                        <Link href="/login" className="text-sm font-bold text-slate-600 hover:text-orange-500 transition-colors">{"로그인"}</Link>
+                        <Link href="/login" className="text-sm font-bold text-slate-600 hover:text-orange-500 transition-colors">{"시공사 로그인"}</Link>
                         <Link href="/companies" className="px-5 py-2 bg-slate-900 text-white text-sm font-bold rounded-full hover:bg-slate-800 transition-all shadow-md">{"무료 비교"}</Link>
                     </div>
                 </div>
@@ -51,11 +52,17 @@ export default function MarketingLandingPage() {
                         </Link>
                     </div>
 
-                    <div className="relative hidden md:block">
-                        <div className="bg-slate-100 rounded-[40px] p-4 shadow-2xl">
-                            <div className="bg-white rounded-[32px] overflow-hidden relative aspect-[4/3] flex items-center justify-center border border-slate-200">
-                                <div className="absolute bg-orange-500 text-white px-6 py-4 rounded-3xl shadow-2xl font-bold flex items-center gap-2">
-                                    <ShieldCheck className="w-6 h-6" /> {"우리지역 업체 검증 완료"}
+                    <div className="relative">
+                        <div className="relative w-full max-w-[500px] mx-auto">
+                            <SolarCarousel />
+                            {/* Verification Badge - Adjusted position to avoid overlap */}
+                            <div className="absolute -top-8 -left-8 bg-white/90 backdrop-blur-sm rounded-3xl p-5 shadow-2xl border border-white hidden lg:flex items-center gap-4 z-20 animate-fade-in-up">
+                                <div className="w-10 h-10 bg-green-100 rounded-2xl flex items-center justify-center text-green-600">
+                                    <ShieldCheck className="w-7 h-7" />
+                                </div>
+                                <div className="pr-2">
+                                    <p className="text-slate-900 font-black text-md leading-tight">{"100% 검증 완료"}</p>
+                                    <p className="text-slate-500 text-xs font-bold">{"우리 지역 인증 업체만"}</p>
                                 </div>
                             </div>
                         </div>
