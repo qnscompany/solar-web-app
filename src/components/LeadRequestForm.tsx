@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
+import { sendLeadNotificationAction } from '@/app/actions/leads';
 
 interface LeadRequestFormProps {
     companyId: string;
@@ -46,6 +47,21 @@ export default function LeadRequestForm({ companyId, companyName }: LeadRequestF
             }
 
             console.log('Lead submitted successfully:', data);
+
+            // 신규 리드 이메일 알림 발송 (성공 여부 관계없이 UI 진행을 위해 await 하되 에러는 캡처)
+            if (data && data.length > 0) {
+                try {
+                    console.log('[LeadForm] Calling notification action...');
+                    const result = await sendLeadNotificationAction({
+                        leadId: data[0].id,
+                        companyId: companyId
+                    });
+                    console.log('[LeadForm] Notification result:', result);
+                } catch (notiErr) {
+                    console.error('[LeadForm] Notification action failed:', notiErr);
+                }
+            }
+
             setIsSuccess(true);
             setFormData({
                 customer_name: '',
