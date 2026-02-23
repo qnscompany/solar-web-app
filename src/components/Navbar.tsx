@@ -18,27 +18,16 @@ export default function Navbar() {
                     </Link>
                 </div>
 
-                <nav className="hidden md:flex items-center gap-8">
-                    <Link href="/companies" className="text-sm font-semibold text-gray-600 hover:text-blue-600 transition-colors">
-                        업체 찾기
-                    </Link>
-                    <Link href="/dashboard" className="text-sm font-semibold text-gray-600 hover:text-blue-600 transition-colors">
-                        대시보드
-                    </Link>
+                <nav className="hidden md:flex flex-1 items-center justify-center">
+                    {/* TODO: 메인 메뉴 추가 예정 */}
                 </nav>
 
-                <div className="flex items-center gap-3">
+                <div className="flex items-center">
                     <Link
                         href="/login"
                         className="rounded-lg px-3 py-2 text-sm font-bold text-slate-400 hover:text-slate-600 hover:bg-slate-50 transition-colors"
                     >
                         시공사 로그인
-                    </Link>
-                    <Link
-                        href="/companies"
-                        className="rounded-full bg-slate-900 px-5 py-2 text-sm font-black text-white shadow-md hover:bg-slate-800 transition-all active:scale-95"
-                    >
-                        무료 비교
                     </Link>
                 </div>
             </div>

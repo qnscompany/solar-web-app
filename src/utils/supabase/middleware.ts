@@ -32,10 +32,12 @@ export async function updateSession(request: NextRequest) {
         data: { user },
     } = await supabase.auth.getUser()
 
-    // 대시보드 보호 로직
+    // 보호가 필요한 경로에 대해 session 정보 확인
+    // (/dashboard, /admin 등)
     if (
         !user &&
-        request.nextUrl.pathname.startsWith('/dashboard')
+        (request.nextUrl.pathname.startsWith('/dashboard') ||
+            request.nextUrl.pathname.startsWith('/admin'))
     ) {
         const url = request.nextUrl.clone()
         url.pathname = '/login'
