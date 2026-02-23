@@ -16,7 +16,11 @@ export default function SolarCalculator() {
             return { cap: '1kW 이하', saving: '월 1~3만원' };
         }
         if (loc === 'house') {
-            return { cap: '3kW', saving: '월 3만원' };
+            let saving = '월 3만원';
+            if (bill === '1to3') saving = '월 1~3만원';
+            else if (bill === '3to10') saving = '월 1~5만원';
+            else if (bill === 'over10') saving = '월 1~7만원';
+            return { cap: '3kW', saving };
         }
         if (loc === 'factory') {
             return { cap: '30kW 이상', saving: '상담 필요' };
