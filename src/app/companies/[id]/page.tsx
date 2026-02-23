@@ -18,13 +18,23 @@ interface CompanyDetail {
     };
 }
 
+/**
+ * 특정 업체 상세 정보 페이지 (Dynamic Route)
+ * 서버로부터 업체 프로필과 역량 정보를 가져와 상세히 보여줍니다.
+ */
 export default function CompanyDetailPage({ params }: { params: Promise<{ id: string }> }) {
+    // [Next.js dynamic params] React 'use' 훅을 통해 비동기 파라미터를 해제합니다.
     const { id } = use(params);
+
+    // [상태 관리] 업체 데이터, 로딩 상태, 에러 상태
     const [company, setCompany] = useState<CompanyDetail | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
+        /**
+         * 업체 상세 데이터 및 관계 테이블(capabilities) 데이터를 페칭합니다.
+         */
         async function fetchCompany() {
             try {
                 const { data, error } = await supabase
@@ -44,9 +54,9 @@ export default function CompanyDetailPage({ params }: { params: Promise<{ id: st
                     .maybeSingle();
 
                 if (error) throw error;
-
                 if (!data) throw new Error('업체 정보를 찾을 수 없습니다.');
 
+                // [데이터 정규화] Supabase 관계 쿼리 결과가 배열일 경우 첫 번째 항목을 사용합니다.
                 setCompany({
                     ...data,
                     capabilities: (Array.isArray(data.capabilities) ? data.capabilities[0] : data.capabilities) || {
@@ -66,7 +76,11 @@ export default function CompanyDetailPage({ params }: { params: Promise<{ id: st
         fetchCompany();
     }, [id]);
 
+    // -----------------------------------------------------------------
+    // [조건부 렌더링] 로딩 중 및 에러 시 화면 처리
+    // -----------------------------------------------------------------
     if (loading) return <div className="p-8 text-center text-xl font-medium">상세 정보를 불러오는 중...</div>;
+
     if (error || !company) return (
         <div className="p-8 text-center">
             <p className="text-red-500 mb-4">데이터를 불러오지 못했습니다: {error || '업체를 찾을 수 없습니다.'}</p>
@@ -76,6 +90,7 @@ export default function CompanyDetailPage({ params }: { params: Promise<{ id: st
 
     return (
         <main className="min-h-screen bg-gray-50 pb-20">
+            {/* 업체 타이틀 영역 */}
             <div className="bg-blue-600 text-white py-12">
                 <div className="mx-auto max-w-4xl px-8">
                     <Link href="/companies" className="text-blue-100 hover:text-white mb-6 inline-block transition-colors">
@@ -87,17 +102,21 @@ export default function CompanyDetailPage({ params }: { params: Promise<{ id: st
             </div>
 
             <div className="mx-auto max-w-4xl px-8 -mt-8">
+                {/* [상세 레이아웃 영역] 실무 개발자가 확장 가능하도록 그리드로 구성 */}
                 <div className="grid gap-8 md:grid-cols-2">
-                    {/* ... 기존 기본 정보 및 특화 역량 카드 ... */}
+                    {/* (기존 상세 정보 카드들이 여기에 배치됩니다) */}
                 </div>
 
-                {/* Reviews Section (Sample) */}
+                {/* [SECTION] 고객 설치 후기 (샘플 데이터)
+                    - 사회적 증명(Social Proof)을 통해 신뢰도를 높이는 UI 섹션
+                */}
                 <div className="mt-12">
                     <h2 className="text-2xl font-black text-slate-900 mb-8 flex items-center gap-2">
                         <Quote className="text-orange-500 w-6 h-6" /> {"고객님들의 생생한 설치 후기"}
                     </h2>
                     <div className="grid gap-6 md:grid-cols-3">
-                        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                        {/* 후기 카드 1 */}
+                        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 transition-transform hover:-translate-y-1">
                             <div className="flex text-yellow-400 mb-3">
                                 {[...Array(5)].map((_, i) => <Star key={i} className="w-4 h-4 fill-current" />)}
                             </div>
@@ -107,7 +126,8 @@ export default function CompanyDetailPage({ params }: { params: Promise<{ id: st
                                 <span>당진시 송악읍 | 5kW</span>
                             </div>
                         </div>
-                        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                        {/* 후기 카드 2 */}
+                        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 transition-transform hover:-translate-y-1">
                             <div className="flex text-yellow-400 mb-3">
                                 {[...Array(5)].map((_, i) => <Star key={i} className="w-4 h-4 fill-current" />)}
                             </div>
@@ -117,7 +137,8 @@ export default function CompanyDetailPage({ params }: { params: Promise<{ id: st
                                 <span>서산시 해미면 | 3kW</span>
                             </div>
                         </div>
-                        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                        {/* 후기 카드 3 */}
+                        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 transition-transform hover:-translate-y-1">
                             <div className="flex text-yellow-400 mb-3">
                                 {[...Array(4)].map((_, i) => <Star key={i} className="w-4 h-4 fill-current" />)}
                                 <Star className="w-4 h-4 text-slate-200" />
@@ -131,6 +152,7 @@ export default function CompanyDetailPage({ params }: { params: Promise<{ id: st
                     </div>
                 </div>
 
+                {/* [FORM] 견적 요청 입력 인터페이스 */}
                 <LeadRequestForm companyId={company.id} companyName={company.company_name} />
             </div>
         </main>
