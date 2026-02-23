@@ -26,6 +26,9 @@ export const metadata: Metadata = {
   },
   keywords: ['태양광', '태양광 설치', '충남 태양광', '당진 태양광', '태양광 시공업체', '태양광 견적', '태양광 비교'],
   robots: 'index, follow',
+  verification: {
+    google: 't_zmG-zLH9GcJHoi3mPdIT_2B28Fx82zXRAADhHc5Ag',
+  },
 };
 
 export default function RootLayout({
