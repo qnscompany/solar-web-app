@@ -27,10 +27,13 @@ export default function LeadRequestForm({ companyId, companyName }: LeadRequestF
 
         try {
             console.log('Submitting lead request to company:', companyId);
+            const newLeadId = crypto.randomUUID(); // 클라이언트에서 ID 직접 생성
+
             const { data, error: submitError } = await supabase
                 .from('lead_requests')
                 .insert([
                     {
+                        id: newLeadId, // 명시적으로 ID 지정
                         company_id: companyId,
                         customer_name: formData.customer_name,
                         phone: formData.phone,
@@ -38,33 +41,30 @@ export default function LeadRequestForm({ companyId, companyName }: LeadRequestF
                         expected_capacity: formData.expected_capacity,
                         status: 'pending',
                     },
-                ])
-                .select();
+                ]);
+            // .select() 제거 (RLS 때문에 빈 값이 올 수 있음)
 
             if (submitError) {
                 console.error('Lead submission error:', submitError);
                 throw submitError;
             }
 
-            console.log('Lead submitted successfully:', data);
+            console.log('Lead submitted successfully with ID:', newLeadId);
 
-            // 신규 리드 이메일 알림 발송 (성공 여부 관계없이 UI 진행을 위해 await 하되 에러는 캡처)
-            if (data && data.length > 0) {
-                try {
-                    console.log('[LeadForm] Calling notification action...');
-                    const result = await sendLeadNotificationAction({
-                        leadId: data[0].id,
-                        companyId: companyId
-                    });
-                    if (result.success) {
-                        console.log('[LeadForm] Notification sent successfully!');
-                    } else {
-                        console.error('[LeadForm] Notification failed logic:', result.error);
-                        // 사용자에게는 보이지 않게 콘솔에만 기록
-                    }
-                } catch (notiErr) {
-                    console.error('[LeadForm] Notification action failed:', notiErr);
+            // 신규 리드 이메일 알림 발송 (생성한 ID를 바로 사용)
+            try {
+                console.log('[LeadForm] Calling notification action for ID:', newLeadId);
+                const result = await sendLeadNotificationAction({
+                    leadId: newLeadId,
+                    companyId: companyId
+                });
+                if (result.success) {
+                    console.log('[LeadForm] Notification sent successfully!');
+                } else {
+                    console.error('[LeadForm] Notification failed logic:', result.error);
                 }
+            } catch (notiErr) {
+                console.error('[LeadForm] Notification action failed:', notiErr);
             }
 
             setIsSuccess(true);

@@ -3,14 +3,18 @@
 import { Resend } from 'resend';
 import { createAdminClient } from '@/utils/supabase/admin';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-
 interface SendLeadNotificationParams {
     leadId: string;
     companyId: string;
 }
 
 export async function sendLeadNotificationAction({ leadId, companyId }: SendLeadNotificationParams) {
+    if (!process.env.RESEND_API_KEY) {
+        console.error('[Email Notification] Critical: RESEND_API_KEY is missing in server environment');
+        return { success: false, error: '서버 설정 오류: API 키가 없습니다.' };
+    }
+
+    const resend = new Resend(process.env.RESEND_API_KEY);
     const supabase = createAdminClient();
 
     try {
