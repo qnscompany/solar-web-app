@@ -12,6 +12,9 @@ export default function SolarCalculator() {
     const [loc, setLoc] = useState<Location>('house');
 
     const calculateResult = () => {
+        if (loc === 'veranda') {
+            return { cap: '1kW 이하', saving: '월 1~3만원' };
+        }
         if (bill === 'under3' && loc === 'house') {
             return { cap: '3kW', saving: '월 3만원' };
         }
@@ -48,8 +51,8 @@ export default function SolarCalculator() {
                             key={item.id}
                             onClick={() => setBill(item.id as BillRange)}
                             className={`py-4 px-2 rounded-2xl font-black text-sm transition-all border-2 ${bill === item.id
-                                    ? 'bg-slate-900 text-white border-slate-900 shadow-lg'
-                                    : 'bg-white text-slate-500 border-slate-100 hover:border-slate-200'
+                                ? 'bg-slate-900 text-white border-slate-900 shadow-lg'
+                                : 'bg-white text-slate-500 border-slate-100 hover:border-slate-200'
                                 }`}
                         >
                             {item.label}
@@ -73,8 +76,8 @@ export default function SolarCalculator() {
                             key={item.id}
                             onClick={() => setLoc(item.id as Location)}
                             className={`py-4 px-2 rounded-2xl font-black text-sm transition-all border-2 ${loc === item.id
-                                    ? 'bg-slate-900 text-white border-slate-900 shadow-lg'
-                                    : 'bg-white text-slate-500 border-slate-100 hover:border-slate-200'
+                                ? 'bg-slate-900 text-white border-slate-900 shadow-lg'
+                                : 'bg-white text-slate-500 border-slate-100 hover:border-slate-200'
                                 }`}
                         >
                             {item.label}
