@@ -35,7 +35,7 @@ const FamilyView = () => {
             </g>
 
             {/* Speech Bubble */}
-            <g transform="translate(40, 100)" className="animate-bounce-slow">
+            <g transform="translate(40, 40)" className="animate-bounce-slow">
                 <rect x="0" y="0" width="180" height="50" rx="25" fill="#FEF08A" />
                 <path d="M150 50 L160 70 L175 50 Z" fill="#FEF08A" />
                 <text x="90" y="32" textAnchor="middle" fill="#854D0E" fontSize="14" fontWeight="900" fontFamily="sans-serif">전기요금이 거의 안 나와요!</text>

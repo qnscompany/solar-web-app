@@ -32,8 +32,16 @@ export default function MarketingLandingPage() {
                 <div className="absolute top-0 right-0 w-1/2 h-full bg-orange-50 -skew-x-12 translate-x-1/4 -z-10" />
                 <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-2 gap-12 items-center">
                     <div>
-                        <div className="inline-flex items-center gap-2 bg-orange-100 text-orange-600 px-4 py-1.5 rounded-full text-xs font-black mb-6">
-                            <MapPin className="w-3 h-3" /> {"우리 동네 업체 매칭 1위"}
+                        <div className="flex flex-wrap gap-2 mb-6">
+                            <div className="inline-flex items-center gap-2 bg-orange-100 text-orange-600 px-4 py-1.5 rounded-full text-xs font-black">
+                                <MapPin className="w-3 h-3" /> {"우리 동네 업체 매칭 1위"}
+                            </div>
+                            <div className="inline-flex items-center gap-2 bg-green-100 text-green-700 px-4 py-1.5 rounded-full text-xs font-black">
+                                <ShieldCheck className="w-3 h-3" /> {"국가 인증 업체"}
+                            </div>
+                            <div className="inline-flex items-center gap-2 bg-blue-100 text-blue-700 px-4 py-1.5 rounded-full text-xs font-black">
+                                <CheckCircle2 className="w-3 h-3" /> {"에너지공단 참여기업"}
+                            </div>
                         </div>
                         <h1 className="text-4xl md:text-6xl font-black text-slate-900 leading-[1.1] mb-8 tracking-tight">
                             {"태양광 시공, 타지역 업체에 맡기시겠습니까?"}
@@ -72,15 +80,7 @@ export default function MarketingLandingPage() {
                     <div className="relative">
                         <div className="relative w-full max-w-[500px] mx-auto">
                             <SolarCarousel />
-                            <div className="absolute -top-8 -left-8 bg-white/95 backdrop-blur-sm rounded-3xl p-5 shadow-2xl border border-slate-100 hidden lg:flex items-center gap-4 z-20 animate-fade-in-up">
-                                <div className="w-10 h-10 bg-green-100 rounded-2xl flex items-center justify-center text-green-600">
-                                    <ShieldCheck className="w-7 h-7" />
-                                </div>
-                                <div className="pr-2">
-                                    <p className="text-slate-900 font-black text-md leading-tight">{"국가 인증 업체"}</p>
-                                    <p className="text-slate-500 text-xs font-bold">{"에너지공단 참여기업"}</p>
-                                </div>
-                            </div>
+
                         </div>
                     </div>
                 </div>
