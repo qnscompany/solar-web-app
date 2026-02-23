@@ -81,6 +81,41 @@ export default function MarketingLandingPage() {
                 </div>
             </section>
 
+            {/* Target Separation Section */}
+            <section className="py-20 bg-slate-50 border-y border-slate-100">
+                <div className="max-w-7xl mx-auto px-6">
+                    <div className="grid md:grid-cols-2 gap-8 text-left">
+                        {/* Consumer Card */}
+                        <div className="bg-white p-10 rounded-[32px] shadow-sm border border-slate-100 hover:shadow-md transition-shadow group">
+                            <div className="w-14 h-14 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mb-6">
+                                <CheckCircle2 className="w-8 h-8" />
+                            </div>
+                            <h3 className="text-2xl font-black mb-4">{"견적을 원하시나요?"}</h3>
+                            <p className="text-slate-500 font-medium mb-8 leading-relaxed">
+                                {"충남 지역 최고의 시공업체들이 여러분의 견적을 기다리고 있습니다. 믿을 수 있는 가격을 확인하세요."}
+                            </p>
+                            <Link href="/companies" className="inline-flex items-center gap-2 text-blue-600 font-black hover:gap-3 transition-all underline decoration-2 underline-offset-4">
+                                {"무료 견적 시작하기"} <ArrowRight className="w-5 h-5" />
+                            </Link>
+                        </div>
+
+                        {/* Company Card */}
+                        <div className="bg-white p-10 rounded-[32px] shadow-sm border border-slate-100 hover:shadow-md transition-shadow group">
+                            <div className="w-14 h-14 bg-orange-50 text-orange-600 rounded-2xl flex items-center justify-center mb-6">
+                                <Sun className="w-8 h-8" />
+                            </div>
+                            <h3 className="text-2xl font-black mb-4">{"업체 사장님이신가요?"}</h3>
+                            <p className="text-slate-500 font-medium mb-8 leading-relaxed">
+                                {"'쨍하고'의 파트너가 되어 더 많은 고객을 만나보세요. 입점 및 인증 절차를 안내해 드립니다."}
+                            </p>
+                            <Link href="/register" className="inline-flex items-center gap-2 text-orange-600 font-black hover:gap-3 transition-all underline decoration-2 underline-offset-4">
+                                {"파트너 등록하기"} <ArrowRight className="w-5 h-5" />
+                            </Link>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
             {/* Problem Section */}
             <section className="py-24 bg-slate-900 text-white text-center">
                 <div className="max-w-7xl mx-auto px-6">
