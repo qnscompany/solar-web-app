@@ -140,9 +140,10 @@ SET installation_count = (
     SELECT count(*) 
     FROM lead_requests lr 
     WHERE lr.company_id = cc.company_id 
-    AND lr.status = 'installed'
 );
 -- 5. Seed Leads (Diverse status data for Dashboard testing)
+DELETE FROM reviews;
+DELETE FROM experience_posts;
 DELETE FROM lead_requests;
 
 INSERT INTO lead_requests (company_id, customer_name, phone, address, expected_capacity, status) VALUES

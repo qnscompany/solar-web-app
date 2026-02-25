@@ -33,13 +33,13 @@ export default function MarketingLandingPage() {
                 .from('experience_posts')
                 .select(`
                     id,
+                    company_id,
                     title,
                     content,
                     rating,
                     company_profiles (company_name, headquarters_address)
                 `)
-                .order('created_at', { ascending: false })
-                .limit(3);
+                .order('created_at', { ascending: false });
 
             if (posts) setLatestPosts(posts);
 
@@ -220,10 +220,14 @@ export default function MarketingLandingPage() {
                             {"충남 지역 주민들이 직접 남겨주신 소중한 경험입니다. 지역 업체라 더 믿을 수 있습니다."}
                         </p>
                     </div>
-                    <div className="grid md:grid-cols-3 gap-8">
+                    <div className="flex overflow-x-auto gap-8 pb-12 no-scrollbar px-1 snap-x snap-mandatory">
                         {latestPosts.length > 0 ? (
                             latestPosts.map((post, i) => (
-                                <Link key={post.id} href={`/experience/${post.id}`} className="group relative bg-white p-10 rounded-[40px] border border-slate-100 shadow-xl shadow-slate-100/50 hover:-translate-y-3 transition-all duration-500 overflow-hidden text-left">
+                                <Link
+                                    key={post.id}
+                                    href={`/companies/${post.company_id}`}
+                                    className="group relative flex-shrink-0 w-[320px] md:w-[450px] bg-white p-10 rounded-[40px] border border-slate-100 shadow-xl shadow-slate-100/50 hover:-translate-y-3 transition-all duration-500 overflow-hidden text-left snap-center"
+                                >
                                     <div className="absolute top-0 right-0 w-24 h-24 bg-blue-50 rounded-bl-[60px] -z-10 group-hover:bg-blue-100 transition-colors duration-500" />
                                     <div className="flex items-center gap-5 mb-8">
                                         <div className="w-14 h-14 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center font-black text-xl shadow-inner uppercase">
@@ -239,15 +243,19 @@ export default function MarketingLandingPage() {
                                             <Star key={j} className={`w-5 h-5 ${j < post.rating ? 'fill-current' : 'text-slate-100'}`} />
                                         ))}
                                     </div>
-                                    <h4 className="font-black text-slate-900 mb-3 line-clamp-1">{post.title}</h4>
+                                    <h4 className="font-black text-slate-900 mb-3 text-xl">{post.title}</h4>
                                     <p className="text-slate-600 font-bold leading-relaxed line-clamp-3 text-base">
                                         {post.content}
                                     </p>
+                                    <div className="mt-8 pt-6 border-t border-slate-50 flex items-center justify-between text-xs font-black text-blue-600 group-hover:translate-x-1 transition-transform">
+                                        <span>업체 정보 및 견적 요청하기</span>
+                                        <ArrowRight className="w-4 h-4" />
+                                    </div>
                                 </Link>
                             ))
                         ) : (
                             fallbackReviews.map((review, i) => (
-                                <div key={i} className="group relative bg-white p-10 rounded-[40px] border border-slate-100 shadow-xl shadow-slate-100/50 hover:-translate-y-3 transition-all duration-500 overflow-hidden">
+                                <div key={i} className="group relative flex-shrink-0 w-[320px] md:w-[450px] bg-white p-10 rounded-[40px] border border-slate-100 shadow-xl shadow-slate-100/50 hover:-translate-y-3 transition-all duration-500 overflow-hidden snap-center">
                                     <div className="absolute top-0 right-0 w-24 h-24 bg-orange-50 rounded-bl-[60px] -z-10 group-hover:bg-yellow-50 transition-colors duration-500" />
                                     <div className="flex items-center gap-5 mb-8">
                                         <div className="w-14 h-14 bg-gradient-to-br from-orange-100 to-orange-200 text-orange-600 rounded-2xl flex items-center justify-center font-black text-xl shadow-inner">
@@ -272,13 +280,6 @@ export default function MarketingLandingPage() {
                                 </div>
                             ))
                         )}
-                    </div>
-
-                    <div className="mt-20 text-center">
-                        <Link href="/experience" className="group inline-flex items-center gap-3 px-10 py-5 bg-slate-900 text-white rounded-2xl font-black text-xl hover:bg-slate-800 transition-all shadow-2xl shadow-slate-300">
-                            {"더 많은 시공 경험 보러가기"}
-                            <MessageSquare className="w-6 h-6 group-hover:scale-110 transition-transform" />
-                        </Link>
                     </div>
                 </div>
             </section>

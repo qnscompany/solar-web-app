@@ -31,7 +31,7 @@ interface Review {
 export default function CompanyDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = use(params);
     const [company, setCompany] = useState<CompanyDetail | null>(null);
-    const [reviews, setReviews] = useState<Review[]>([]);
+    const [reviews, setReviews] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -71,14 +71,24 @@ export default function CompanyDetailPage({ params }: { params: Promise<{ id: st
                 } as CompanyDetail);
 
                 // Fetch Reviews
-                const { data: reviewData, error: reviewError } = await supabase
+                const { data: reviewData } = await supabase
                     .from('reviews')
                     .select('*')
-                    .eq('company_id', id)
-                    .order('created_at', { ascending: false });
+                    .eq('company_id', id);
 
-                if (reviewError) throw reviewError;
-                setReviews(reviewData || []);
+                // Fetch Experience Board Posts
+                const { data: postData } = await supabase
+                    .from('experience_posts')
+                    .select('*')
+                    .eq('company_id', id);
+
+                // Combine and store (using a simple merge for now, could be more sophisticated)
+                const combined = [
+                    ...(reviewData || []).map(r => ({ ...r, type: 'review' })),
+                    ...(postData || []).map(p => ({ ...p, type: 'post', display_name: '익명' }))
+                ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
+                setReviews(combined);
 
             } catch (err: any) {
                 setError(err.message);
@@ -190,17 +200,24 @@ export default function CompanyDetailPage({ params }: { params: Promise<{ id: st
                     </h2>
                     <div className="grid gap-6 md:grid-cols-3">
                         {reviews.length > 0 ? (
-                            reviews.map((review) => (
-                                <div key={review.id} className="bg-white p-8 rounded-[32px] shadow-sm border border-slate-100 transition-all hover:shadow-md">
-                                    <div className="flex text-yellow-400 mb-4">
-                                        {[...Array(5)].map((_, i) => (
-                                            <Star key={i} className={`w-4 h-4 ${i < review.rating ? 'fill-current' : 'text-slate-200'}`} />
-                                        ))}
+                            reviews.map((item, idx) => (
+                                <div key={item.id || idx} className="bg-white p-8 rounded-[32px] shadow-sm border border-slate-100 transition-all hover:shadow-md">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <div className="flex text-yellow-400">
+                                            {[...Array(5)].map((_, i) => (
+                                                <Star key={i} className={`w-4 h-4 ${i < item.rating ? 'fill-current' : 'text-slate-200'}`} />
+                                            ))}
+                                        </div>
+                                        {item.type === 'post' && (
+                                            <span className="text-[10px] font-black bg-blue-50 text-blue-600 px-2 py-0.5 rounded-md uppercase">Detailed Story</span>
+                                        )}
                                     </div>
-                                    <p className="text-slate-700 font-bold mb-6 italic leading-relaxed">"{review.content}"</p>
+                                    <p className="text-slate-700 font-bold mb-6 italic leading-relaxed">
+                                        {item.type === 'post' ? (item.title + ": " + item.content) : item.content}
+                                    </p>
                                     <div className="flex items-center justify-between text-xs font-black text-slate-400 border-t border-slate-50 pt-6">
-                                        <span>{review.display_name} 고객님</span>
-                                        <span>{new Date(review.created_at).toLocaleDateString()}</span>
+                                        <span>{item.display_name} 고객님</span>
+                                        <span>{new Date(item.created_at).toLocaleDateString()}</span>
                                     </div>
                                 </div>
                             ))
