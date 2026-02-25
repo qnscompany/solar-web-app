@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
 import {
@@ -25,6 +25,7 @@ import SolarCalculator from '@/components/SolarCalculator';
 export default function MarketingLandingPage() {
     const [latestPosts, setLatestPosts] = useState<any[]>([]);
     const [companyCount, setCompanyCount] = useState<number>(0);
+    const scrollContainerRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         async function fetchData() {
@@ -52,6 +53,41 @@ export default function MarketingLandingPage() {
         }
         fetchData();
     }, []);
+
+    // Auto-scroll logic
+    useEffect(() => {
+        const container = scrollContainerRef.current;
+        if (!container || latestPosts.length === 0) return;
+
+        let animationFrameId: number;
+        let scrollSpeed = 0.6; // slow scroll speed
+
+        const animate = () => {
+            if (!container) return;
+            container.scrollLeft += scrollSpeed;
+
+            // Seamless looping (simple approach: reset when reached end)
+            if (container.scrollLeft >= container.scrollWidth - container.clientWidth - 1) {
+                container.scrollLeft = 0;
+            }
+
+            animationFrameId = requestAnimationFrame(animate);
+        };
+
+        const handleMouseEnter = () => cancelAnimationFrame(animationFrameId);
+        const handleMouseLeave = () => animationFrameId = requestAnimationFrame(animate);
+
+        container.addEventListener('mouseenter', handleMouseEnter);
+        container.addEventListener('mouseleave', handleMouseLeave);
+
+        animationFrameId = requestAnimationFrame(animate);
+
+        return () => {
+            cancelAnimationFrame(animationFrameId);
+            container.removeEventListener('mouseenter', handleMouseEnter);
+            container.removeEventListener('mouseleave', handleMouseLeave);
+        };
+    }, [latestPosts]);
 
     // Fallback static reviews if no posts exist
     const fallbackReviews = [
@@ -220,7 +256,10 @@ export default function MarketingLandingPage() {
                             {"충남 지역 주민들이 직접 남겨주신 소중한 경험입니다. 지역 업체라 더 믿을 수 있습니다."}
                         </p>
                     </div>
-                    <div className="flex overflow-x-auto gap-8 pb-12 no-scrollbar px-1 snap-x snap-mandatory">
+                    <div
+                        ref={scrollContainerRef}
+                        className="flex overflow-x-auto gap-8 pb-12 no-scrollbar px-1"
+                    >
                         {latestPosts.length > 0 ? (
                             latestPosts.map((post, i) => (
                                 <Link
@@ -255,7 +294,11 @@ export default function MarketingLandingPage() {
                             ))
                         ) : (
                             fallbackReviews.map((review, i) => (
-                                <div key={i} className="group relative flex-shrink-0 w-[320px] md:w-[450px] bg-white p-10 rounded-[40px] border border-slate-100 shadow-xl shadow-slate-100/50 hover:-translate-y-3 transition-all duration-500 overflow-hidden snap-center">
+                                <Link
+                                    key={i}
+                                    href="/companies"
+                                    className="group relative flex-shrink-0 w-[320px] md:w-[450px] bg-white p-10 rounded-[40px] border border-slate-100 shadow-xl shadow-slate-100/50 hover:-translate-y-3 transition-all duration-500 overflow-hidden snap-center cursor-pointer"
+                                >
                                     <div className="absolute top-0 right-0 w-24 h-24 bg-orange-50 rounded-bl-[60px] -z-10 group-hover:bg-yellow-50 transition-colors duration-500" />
                                     <div className="flex items-center gap-5 mb-8">
                                         <div className="w-14 h-14 bg-gradient-to-br from-orange-100 to-orange-200 text-orange-600 rounded-2xl flex items-center justify-center font-black text-xl shadow-inner">
@@ -277,7 +320,11 @@ export default function MarketingLandingPage() {
                                             {review.text}
                                         </p>
                                     </div>
-                                </div>
+                                    <div className="mt-8 pt-6 border-t border-slate-50 flex items-center justify-between text-xs font-black text-blue-600 group-hover:translate-x-1 transition-transform">
+                                        <span>업체 정보 상세보기</span>
+                                        <ArrowRight className="w-4 h-4" />
+                                    </div>
+                                </Link>
                             ))
                         )}
                     </div>
