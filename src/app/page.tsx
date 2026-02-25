@@ -1,5 +1,7 @@
 'use client';
 
+import { useEffect, useState } from 'react';
+import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
 import {
     ShieldCheck,
@@ -11,16 +13,44 @@ import {
     ArrowRight,
     Sun,
     Star,
-    Quote
+    Quote,
+    MessageSquare
 } from 'lucide-react';
 import SolarCarousel from '@/components/solar-carousel/SolarCarousel';
 import SolarCalculator from '@/components/SolarCalculator';
 
 /**
  * 마케팅 랜딩 페이지 컴포넌트
- * 서비스의 가치를 전달하고 사용자의 전환(견적 요청)을 유도하는 플랫폼의 첫 관문입니다.
  */
 export default function MarketingLandingPage() {
+    const [latestPosts, setLatestPosts] = useState<any[]>([]);
+
+    useEffect(() => {
+        async function fetchLatestPosts() {
+            const { data, error } = await supabase
+                .from('experience_posts')
+                .select(`
+                    id,
+                    title,
+                    content,
+                    rating,
+                    company_profiles (company_name, headquarters_address)
+                `)
+                .order('created_at', { ascending: false })
+                .limit(3);
+
+            if (data) setLatestPosts(data);
+        }
+        fetchLatestPosts();
+    }, []);
+
+    // Fallback static reviews if no posts exist
+    const fallbackReviews = [
+        { name: '김○숙', loc: '당진시 당진동', cap: '5kW', stars: 5, text: "당진 시내 아파트 살면서 옥상 설치 고민했는데, 한빛 덕분에 정부 지원금 혜택까지 꼼꼼히 챙겼습니다. 당진 주민들한테는 역시 여기가 최고네요." },
+        { name: '이○철', loc: '서산시 동문동', cap: '10kW', stars: 5, text: "서산 시청 보조금 신청 절차도 완벽하게 대행해주셨어요. 지역 업체라 그런지 어제 점검 요청했는데 오늘 아침에 바로 오셔서 깜짝 놀랐습니다." },
+        { name: '박○순', loc: '아산시 온양동', cap: '3kW', stars: 4, text: "아산 지역 다른 업체보다 전문성이 느껴졌어요. 태양광 완전 처음인데 상담부터 설치까지 친절하게 설명해주시고 뒷정리도 아주 깔끔했습니다." }
+    ];
+
     return (
         <div className="min-h-screen bg-slate-50 font-sans text-slate-900 overflow-x-hidden">
             {/* -----------------------------------------------------------------
@@ -173,39 +203,73 @@ export default function MarketingLandingPage() {
                 [SECTION] Testimonials
                 - 실제 고객 후기 3개 (신뢰도 향상)
             ----------------------------------------------------------------- */}
-            <section className="py-24 bg-white overflow-hidden">
+            <section className="py-24 bg-white overflow-hidden" id="customer-reviews">
                 <div className="max-w-7xl mx-auto px-6">
                     <div className="text-center mb-16">
-                        <h2 className="text-3xl md:text-4xl font-black text-slate-900 mb-4">{"이웃들의 실제 설치 후기"}</h2>
-                        <p className="text-slate-500 font-bold">{"지역 주민들이 직접 남겨주신 소중한 경험입니다."}</p>
+                        <h2 className="text-3xl md:text-5xl font-black text-slate-900 mb-6 tracking-tight">{"이웃들의 실제 설치 후기"}</h2>
+                        <p className="text-lg text-slate-500 font-bold max-w-2xl mx-auto leading-relaxed">
+                            {"충남 지역 주민들이 직접 남겨주신 소중한 경험입니다. 지역 업체라 더 믿을 수 있습니다."}
+                        </p>
                     </div>
                     <div className="grid md:grid-cols-3 gap-8">
-                        {[
-                            { name: '김○숙', loc: '당진시 합덕읍', cap: '5kW', stars: 5, text: "타지역 업체한테 견적 받았다가 바가지 쓸 뻔했는데, 여기서 비교하고 우리 동네 업체 찾았어요. 설치 후 전기세가 확 줄었습니다." },
-                            { name: '이○철', loc: '서산시 대산읍', cap: '10kW', stars: 5, text: "A/S 연락했더니 다음날 바로 왔어요. 서울 업체였으면 절대 이러지 못했을 거예요." },
-                            { name: '박○순', loc: '아산시 둔포면', cap: '3kW', stars: 4, text: "태양광 완전 처음인데 상담부터 설치까지 친절하게 설명해줬어요. 계약서도 꼼꼼히 확인해주더라고요." }
-                        ].map((review, i) => (
-                            <div key={i} className="bg-slate-50 p-8 rounded-[32px] border border-slate-100 hover:-translate-y-2 transition-transform duration-300">
-                                <div className="flex items-center gap-4 mb-6">
-                                    <div className="w-12 h-12 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center font-black text-lg">
-                                        {review.name[0]}
+                        {latestPosts.length > 0 ? (
+                            latestPosts.map((post, i) => (
+                                <Link key={post.id} href={`/experience/${post.id}`} className="group relative bg-white p-10 rounded-[40px] border border-slate-100 shadow-xl shadow-slate-100/50 hover:-translate-y-3 transition-all duration-500 overflow-hidden text-left">
+                                    <div className="absolute top-0 right-0 w-24 h-24 bg-blue-50 rounded-bl-[60px] -z-10 group-hover:bg-blue-100 transition-colors duration-500" />
+                                    <div className="flex items-center gap-5 mb-8">
+                                        <div className="w-14 h-14 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center font-black text-xl shadow-inner uppercase">
+                                            {(post.company_profiles as any)?.company_name?.[0] || 'Q'}
+                                        </div>
+                                        <div>
+                                            <h3 className="font-black text-slate-900 text-lg">{(post.company_profiles as any)?.company_name}</h3>
+                                            <p className="text-xs font-black text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md inline-block mt-1">{(post.company_profiles as any)?.headquarters_address?.split(' ').slice(0, 2).join(' ')}</p>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <p className="font-black text-slate-900">{review.name} 고객님</p>
-                                        <p className="text-xs font-bold text-slate-400">{review.loc} | {review.cap}</p>
+                                    <div className="flex text-yellow-400 gap-1 mb-6">
+                                        {[...Array(5)].map((_, j) => (
+                                            <Star key={j} className={`w-5 h-5 ${j < post.rating ? 'fill-current' : 'text-slate-100'}`} />
+                                        ))}
+                                    </div>
+                                    <h4 className="font-black text-slate-900 mb-3 line-clamp-1">{post.title}</h4>
+                                    <p className="text-slate-600 font-bold leading-relaxed line-clamp-3 text-base">
+                                        {post.content}
+                                    </p>
+                                </Link>
+                            ))
+                        ) : (
+                            fallbackReviews.map((review, i) => (
+                                <div key={i} className="group relative bg-white p-10 rounded-[40px] border border-slate-100 shadow-xl shadow-slate-100/50 hover:-translate-y-3 transition-all duration-500 overflow-hidden">
+                                    <div className="absolute top-0 right-0 w-24 h-24 bg-orange-50 rounded-bl-[60px] -z-10 group-hover:bg-yellow-50 transition-colors duration-500" />
+                                    <div className="flex items-center gap-5 mb-8">
+                                        <div className="w-14 h-14 bg-gradient-to-br from-orange-100 to-orange-200 text-orange-600 rounded-2xl flex items-center justify-center font-black text-xl shadow-inner">
+                                            {review.name[0]}
+                                        </div>
+                                        <div>
+                                            <h3 className="font-black text-slate-900 text-lg">{review.name} 고객님</h3>
+                                            <p className="text-xs font-black text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md inline-block mt-1">{review.loc} | {review.cap}</p>
+                                        </div>
+                                    </div>
+                                    <div className="flex text-yellow-400 gap-1 mb-6">
+                                        {[...Array(5)].map((_, j) => (
+                                            <Star key={j} className={`w-5 h-5 ${j < review.stars ? 'fill-current' : 'text-slate-100'}`} />
+                                        ))}
+                                    </div>
+                                    <div className="relative">
+                                        <Quote className="absolute -top-4 -left-2 w-10 h-10 text-slate-50 opacity-10 group-hover:text-orange-100 transition-colors" />
+                                        <p className="text-slate-700 font-bold leading-relaxed relative z-10 text-lg">
+                                            {review.text}
+                                        </p>
                                     </div>
                                 </div>
-                                <div className="flex text-yellow-400 mb-4">
-                                    {[...Array(5)].map((_, j) => (
-                                        <Star key={j} className={`w-4 h-4 ${j < review.stars ? 'fill-current' : 'text-slate-200'}`} />
-                                    ))}
-                                </div>
-                                <p className="text-slate-700 font-bold leading-relaxed italic">
-                                    <Quote className="w-5 h-5 text-slate-200 mb-2" />
-                                    {review.text}
-                                </p>
-                            </div>
-                        ))}
+                            ))
+                        )}
+                    </div>
+
+                    <div className="mt-20 text-center">
+                        <Link href="/experience" className="group inline-flex items-center gap-3 px-10 py-5 bg-slate-900 text-white rounded-2xl font-black text-xl hover:bg-slate-800 transition-all shadow-2xl shadow-slate-300">
+                            {"더 많은 시공 경험 보러가기"}
+                            <MessageSquare className="w-6 h-6 group-hover:scale-110 transition-transform" />
+                        </Link>
                     </div>
                 </div>
             </section>

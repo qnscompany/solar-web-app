@@ -16,19 +16,30 @@ interface CompanyDetail {
         construction_capacity_value: number;
         warranty_period_years: number;
         technician_count: number;
+        installation_count: number;
     };
+}
+
+interface Review {
+    id: string;
+    display_name: string;
+    rating: number;
+    content: string;
+    created_at: string;
 }
 
 export default function CompanyDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = use(params);
     const [company, setCompany] = useState<CompanyDetail | null>(null);
+    const [reviews, setReviews] = useState<Review[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        async function fetchCompany() {
+        async function fetchCompanyAndReviews() {
             try {
-                const { data, error } = await supabase
+                // Fetch Company Details
+                const { data: companyData, error: companyError } = await supabase
                     .from('company_profiles')
                     .select(`
                         id,
@@ -38,31 +49,44 @@ export default function CompanyDetailPage({ params }: { params: Promise<{ id: st
                             cumulative_capacity_mw,
                             construction_capacity_value,
                             warranty_period_years,
-                            technician_count
+                            technician_count,
+                            installation_count
                         )
                     `)
                     .eq('id', id)
                     .maybeSingle();
 
-                if (error) throw error;
-                if (!data) throw new Error('업체 정보를 찾을 수 없습니다.');
+                if (companyError) throw companyError;
+                if (!companyData) throw new Error('업체 정보를 찾을 수 없습니다.');
 
                 setCompany({
-                    ...data,
-                    capabilities: (Array.isArray(data.capabilities) ? data.capabilities[0] : data.capabilities) || {
+                    ...companyData,
+                    capabilities: (Array.isArray(companyData.capabilities) ? companyData.capabilities[0] : companyData.capabilities) || {
                         cumulative_capacity_mw: 0,
                         construction_capacity_value: 0,
                         warranty_period_years: 0,
-                        technician_count: 0
+                        technician_count: 0,
+                        installation_count: 0
                     }
                 } as CompanyDetail);
+
+                // Fetch Reviews
+                const { data: reviewData, error: reviewError } = await supabase
+                    .from('reviews')
+                    .select('*')
+                    .eq('company_id', id)
+                    .order('created_at', { ascending: false });
+
+                if (reviewError) throw reviewError;
+                setReviews(reviewData || []);
+
             } catch (err: any) {
                 setError(err.message);
             } finally {
                 setLoading(false);
             }
         }
-        fetchCompany();
+        fetchCompanyAndReviews();
     }, [id]);
 
     if (loading) return <div className="p-8 text-center text-xl font-medium">상세 정보를 불러오는 중...</div>;
@@ -93,11 +117,15 @@ export default function CompanyDetailPage({ params }: { params: Promise<{ id: st
                             <div className="flex items-center gap-4">
                                 <div className="text-center px-4 border-r border-white/10">
                                     <p className="text-blue-400 text-xs font-black mb-1">평균 평점</p>
-                                    <p className="text-2xl font-black">4.8</p>
+                                    <p className="text-2xl font-black">
+                                        {reviews.length > 0
+                                            ? (reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length).toFixed(1)
+                                            : '0.0'}
+                                    </p>
                                 </div>
                                 <div className="text-center px-4">
                                     <p className="text-blue-400 text-xs font-black mb-1">누적 시공</p>
-                                    <p className="text-2xl font-black">47건</p>
+                                    <p className="text-2xl font-black">{company.capabilities.installation_count}건</p>
                                 </div>
                             </div>
                         </div>
@@ -161,24 +189,24 @@ export default function CompanyDetailPage({ params }: { params: Promise<{ id: st
                         <Quote className="text-blue-600 w-8 h-8" /> <span>고객님들의 실제 설치 후기</span>
                     </h2>
                     <div className="grid gap-6 md:grid-cols-3">
-                        {[
-                            { name: '김○○', loc: '당진시 송악읍', cap: '5kW', text: '설치 후 전기세가 월 8만원에서 1만원으로 줄었어요!', stars: 5 },
-                            { name: '이○○', loc: '서산시 해미면', cap: '3kW', text: '견적부터 설치까지 친절하게 안내해줬어요.', stars: 5 },
-                            { name: '박○○', loc: '아산시 탕정면', cap: '10kW', text: 'A/S 전화했을 때 당일 방문해줘서 믿음직스러웠습니다.', stars: 4 }
-                        ].map((review, idx) => (
-                            <div key={idx} className="bg-white p-8 rounded-[32px] shadow-sm border border-slate-100 transition-all hover:shadow-md">
-                                <div className="flex text-yellow-400 mb-4">
-                                    {[...Array(5)].map((_, i) => (
-                                        <Star key={i} className={`w-4 h-4 ${i < review.stars ? 'fill-current' : 'text-slate-200'}`} />
-                                    ))}
+                        {reviews.length > 0 ? (
+                            reviews.map((review) => (
+                                <div key={review.id} className="bg-white p-8 rounded-[32px] shadow-sm border border-slate-100 transition-all hover:shadow-md">
+                                    <div className="flex text-yellow-400 mb-4">
+                                        {[...Array(5)].map((_, i) => (
+                                            <Star key={i} className={`w-4 h-4 ${i < review.rating ? 'fill-current' : 'text-slate-200'}`} />
+                                        ))}
+                                    </div>
+                                    <p className="text-slate-700 font-bold mb-6 italic leading-relaxed">"{review.content}"</p>
+                                    <div className="flex items-center justify-between text-xs font-black text-slate-400 border-t border-slate-50 pt-6">
+                                        <span>{review.display_name} 고객님</span>
+                                        <span>{new Date(review.created_at).toLocaleDateString()}</span>
+                                    </div>
                                 </div>
-                                <p className="text-slate-700 font-bold mb-6 italic leading-relaxed">"{review.text}"</p>
-                                <div className="flex items-center justify-between text-xs font-black text-slate-400 border-t border-slate-50 pt-6">
-                                    <span>{review.name} 고객님</span>
-                                    <span>{review.loc} | {review.cap}</span>
-                                </div>
-                            </div>
-                        ))}
+                            ))
+                        ) : (
+                            <p className="col-span-3 text-center py-12 text-slate-400 font-medium">아직 등록된 후기가 없습니다.</p>
+                        )}
                     </div>
                 </div>
 

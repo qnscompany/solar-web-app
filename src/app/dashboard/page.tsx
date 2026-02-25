@@ -97,109 +97,78 @@ export default function DashboardPage() {
     );
 
     return (
-        <main className="min-h-screen bg-gray-100">
-            {/* Header */}
-            <header className="bg-white border-b border-gray-200 py-6">
+        <main className="min-h-screen bg-gray-50">
+            {/* Simple Header */}
+            <header className="bg-white border-b border-gray-100 py-6">
                 <div className="max-w-[1400px] mx-auto px-8 flex justify-between items-center">
                     <div>
-                        <h1 className="text-2xl font-black text-gray-900">{companyName || '파트너'} 대시보드</h1>
-                        <p className="text-gray-500 text-sm">유입된 견적 요청을 관리하세요</p>
+                        <h1 className="text-2xl font-black text-slate-900">{companyName || '파트너'} 대시보드</h1>
+                        <p className="text-slate-500 text-sm font-bold">유입된 견적 요청을 한눈에 관리하세요</p>
                     </div>
                     <div className="flex items-center gap-6">
-                        <Link href="/onboarding/company?edit=true" className="text-blue-600 font-bold hover:text-blue-700 text-sm transition-colors">
-                            업체 정보 수정
-                        </Link>
-                        <Link href="/companies" className="text-gray-500 font-medium hover:text-blue-600 text-sm transition-colors">
-                            업체 리스트 페이지
-                        </Link>
-                        <button
-                            onClick={handleLogout}
-                            className="bg-gray-100 text-gray-600 px-4 py-2 rounded-lg font-bold text-sm hover:bg-gray-200 transition-all active:scale-95"
-                        >
-                            로그아웃
-                        </button>
+                        <Link href="/onboarding/company?edit=true" className="text-blue-600 font-bold hover:underline text-sm">업체 정보 수정</Link>
+                        <Link href="/companies" className="text-slate-500 font-bold hover:text-slate-800 text-sm">업체 리스트</Link>
+                        <button onClick={handleLogout} className="bg-slate-100 text-slate-600 px-4 py-2 rounded-xl font-bold text-sm hover:bg-slate-200">로그아웃</button>
                     </div>
                 </div>
             </header>
 
-            {/* Kanban Board */}
-            <div className="max-w-[1400px] mx-auto px-8 py-10">
+            {/* Robust 4-Column Grid */}
+            <div className="max-w-[1600px] mx-auto px-6 py-10">
                 {error && (
-                    <div className="mb-8 p-6 bg-red-50 text-red-700 rounded-2xl border border-red-100 flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                            <span className="text-xl">⚠️</span>
-                            <span className="font-bold">{error}</span>
-                        </div>
-                        <button
-                            onClick={() => window.location.reload()}
-                            className="text-red-600 font-bold hover:underline text-sm"
-                        >
-                            새로고침
-                        </button>
-                    </div>
+                    <div className="mb-8 p-6 bg-red-50 text-red-700 rounded-3xl border border-red-100 font-bold text-center">{error}</div>
                 )}
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    {/* Column: New */}
-                    <div className="flex flex-col h-full">
-                        <div className="flex items-center justify-between mb-4 px-2">
-                            <h2 className="font-bold text-gray-600 flex items-center gap-2">
-                                <span className="w-2 h-2 rounded-full bg-blue-500"></span>
-                                신규 리드
-                            </h2>
-                            <span className="bg-gray-200 text-gray-600 text-xs font-black px-2 py-1 rounded-md">
-                                {filterLeads('pending').length}
-                            </span>
+                {/* Scrollable Container for Robustness */}
+                <div className="overflow-x-auto pb-8 scrollbar-thin scrollbar-thumb-slate-200">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 min-w-[1200px] lg:min-w-0">
+                        {/* Column 1 */}
+                        <div className="bg-white rounded-[40px] p-6 border border-slate-100 shadow-sm flex flex-col h-full min-h-[500px]">
+                            <div className="flex items-center justify-between mb-8 px-1">
+                                <h2 className="font-black text-slate-800 flex items-center gap-2.5 text-lg"><span className="w-3 h-3 rounded-full bg-blue-500"></span>신규 리드</h2>
+                                <span className="bg-slate-100 text-slate-600 text-xs font-black px-3 py-1 rounded-full">{filterLeads('pending').length}</span>
+                            </div>
+                            <div className="space-y-4 flex-1">
+                                {filterLeads('pending').map(lead => <LeadDashboardCard key={lead.id} lead={lead} onStatusUpdate={fetchLeads} />)}
+                                {filterLeads('pending').length === 0 && <div className="text-center py-20 text-slate-300 font-bold text-sm">비어 있음</div>}
+                            </div>
                         </div>
-                        <div className="bg-gray-200/50 rounded-2xl p-4 flex-1 space-y-4 min-h-[500px]">
-                            {filterLeads('pending').map(lead => (
-                                <LeadDashboardCard key={lead.id} lead={lead} onStatusUpdate={fetchLeads} />
-                            ))}
-                            {filterLeads('pending').length === 0 && (
-                                <div className="text-center py-20 text-gray-400 text-sm">신규 리드가 없습니다.</div>
-                            )}
-                        </div>
-                    </div>
 
-                    {/* Column: Consulting */}
-                    <div className="flex flex-col h-full">
-                        <div className="flex items-center justify-between mb-4 px-2">
-                            <h2 className="font-bold text-gray-600 flex items-center gap-2">
-                                <span className="w-2 h-2 rounded-full bg-yellow-500"></span>
-                                상담 중
-                            </h2>
-                            <span className="bg-gray-200 text-gray-600 text-xs font-black px-2 py-1 rounded-md">
-                                {filterLeads('consulting').length}
-                            </span>
+                        {/* Column 2 */}
+                        <div className="bg-white rounded-[40px] p-6 border border-slate-100 shadow-sm flex flex-col h-full">
+                            <div className="flex items-center justify-between mb-8 px-1">
+                                <h2 className="font-black text-slate-800 flex items-center gap-2.5 text-lg"><span className="w-3 h-3 rounded-full bg-orange-500"></span>상담 중</h2>
+                                <span className="bg-slate-100 text-slate-600 text-xs font-black px-3 py-1 rounded-full">{filterLeads('consulting').length}</span>
+                            </div>
+                            <div className="space-y-4 flex-1">
+                                {filterLeads('consulting').map(lead => <LeadDashboardCard key={lead.id} lead={lead} onStatusUpdate={fetchLeads} />)}
+                                {filterLeads('consulting').length === 0 && <div className="text-center py-20 text-slate-300 font-bold text-sm">비어 있음</div>}
+                            </div>
                         </div>
-                        <div className="bg-gray-200/50 rounded-2xl p-4 flex-1 space-y-4">
-                            {filterLeads('consulting').map(lead => (
-                                <LeadDashboardCard key={lead.id} lead={lead} onStatusUpdate={fetchLeads} />
-                            ))}
-                            {filterLeads('consulting').length === 0 && (
-                                <div className="text-center py-20 text-gray-400 text-sm">상담 중인 건이 없습니다.</div>
-                            )}
-                        </div>
-                    </div>
 
-                    {/* Column: Completed */}
-                    <div className="flex flex-col h-full">
-                        <div className="flex items-center justify-between mb-4 px-2">
-                            <h2 className="font-bold text-gray-600 flex items-center gap-2">
-                                <span className="w-2 h-2 rounded-full bg-green-500"></span>
-                                계약 완료
-                            </h2>
-                            <span className="bg-gray-200 text-gray-600 text-xs font-black px-2 py-1 rounded-md">
-                                {filterLeads('completed').length}
-                            </span>
+                        {/* Column 3 */}
+                        <div className="bg-white rounded-[40px] p-6 border border-slate-100 shadow-sm flex flex-col h-full">
+                            <div className="flex items-center justify-between mb-8 px-1">
+                                <h2 className="font-black text-slate-800 flex items-center gap-2.5 text-lg"><span className="w-3 h-3 rounded-full bg-emerald-500"></span>계약 완료</h2>
+                                <span className="bg-slate-100 text-slate-600 text-xs font-black px-3 py-1 rounded-full">{filterLeads('completed').length}</span>
+                            </div>
+                            <div className="space-y-4 flex-1">
+                                {filterLeads('completed').map(lead => <LeadDashboardCard key={lead.id} lead={lead} onStatusUpdate={fetchLeads} />)}
+                                {filterLeads('completed').length === 0 && <div className="text-center py-20 text-slate-300 font-bold text-sm">비어 있음</div>}
+                            </div>
                         </div>
-                        <div className="bg-gray-200/50 rounded-2xl p-4 flex-1 space-y-4">
-                            {filterLeads('completed').map(lead => (
-                                <LeadDashboardCard key={lead.id} lead={lead} onStatusUpdate={fetchLeads} />
-                            ))}
-                            {filterLeads('completed').length === 0 && (
-                                <div className="text-center py-20 text-gray-400 text-sm">완료된 건이 없습니다.</div>
-                            )}
+
+                        {/* Column 4 - 시공 완료 (Most Visible) */}
+                        <div className="bg-slate-900 rounded-[40px] p-6 border border-slate-800 shadow-2xl flex flex-col h-full relative overflow-hidden">
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full -mr-16 -mt-16 blur-3xl"></div>
+                            <div className="flex items-center justify-between mb-8 px-1 relative z-10">
+                                <h2 className="font-black text-white flex items-center gap-2.5 text-lg"><span className="w-3 h-3 rounded-full bg-blue-400 shadow-[0_0_15px_rgba(96,165,250,0.6)]"></span>시공 완료</h2>
+                                <span className="bg-slate-800 text-blue-400 text-xs font-black px-3 py-1 rounded-full">{filterLeads('installed').length}</span>
+                            </div>
+                            <div className="space-y-4 flex-1 relative z-10">
+                                {filterLeads('installed').map(lead => <LeadDashboardCard key={lead.id} lead={lead} onStatusUpdate={fetchLeads} />)}
+                                {filterLeads('installed').length === 0 && <div className="text-center py-20 text-slate-600 font-bold text-sm">비어 있음</div>}
+                            </div>
                         </div>
                     </div>
                 </div>

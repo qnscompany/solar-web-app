@@ -92,6 +92,16 @@ export default function LeadDashboardCard({ lead, onStatusUpdate }: LeadDashboar
                         <span>←</span> <span className="hidden sm:inline">이전</span>
                     </button>
                 )}
+                {lead.status === 'installed' && (
+                    <button
+                        onClick={() => updateStatus('completed')}
+                        disabled={isUpdating}
+                        className="flex-1 bg-gray-50 text-gray-500 py-2 rounded-lg text-sm font-bold hover:bg-gray-100 transition-colors flex items-center justify-center gap-1"
+                        title="계약 완료로 되돌리기"
+                    >
+                        <span>←</span> <span className="hidden sm:inline">이전</span>
+                    </button>
+                )}
 
                 {/* 리드 상태 전진 (Right Arrow / Main Action) */}
                 {(lead.status === 'pending' || lead.status === 'new') && (
@@ -107,9 +117,18 @@ export default function LeadDashboardCard({ lead, onStatusUpdate }: LeadDashboar
                     <button
                         onClick={() => updateStatus('completed')}
                         disabled={isUpdating}
-                        className="flex-[2] bg-green-600 text-white py-2 rounded-lg text-sm font-bold hover:bg-green-700 transition-colors shadow-sm"
+                        className="flex-[2] bg-yellow-500 text-white py-2 rounded-lg text-sm font-bold hover:bg-yellow-600 transition-colors shadow-sm"
                     >
                         {isUpdating ? '처리 중...' : '계약 완료 →'}
+                    </button>
+                )}
+                {lead.status === 'completed' && (
+                    <button
+                        onClick={() => updateStatus('installed')}
+                        disabled={isUpdating}
+                        className="flex-[2] bg-green-600 text-white py-2 rounded-lg text-sm font-bold hover:bg-green-700 transition-colors shadow-sm"
+                    >
+                        {isUpdating ? '처리 중...' : '시공 완료 →'}
                     </button>
                 )}
 
@@ -125,9 +144,9 @@ export default function LeadDashboardCard({ lead, onStatusUpdate }: LeadDashboar
                     </button>
                 )}
 
-                {lead.status === 'completed' && (
+                {lead.status === 'installed' && (
                     <div className="flex-[3] text-center text-green-600 font-bold text-sm py-2 bg-green-50 rounded-lg">
-                        ✓ 계약 완료됨
+                        ✓ 시공 완료됨
                     </div>
                 )}
                 {lead.status === 'canceled' && (
