@@ -24,10 +24,12 @@ import SolarCalculator from '@/components/SolarCalculator';
  */
 export default function MarketingLandingPage() {
     const [latestPosts, setLatestPosts] = useState<any[]>([]);
+    const [companyCount, setCompanyCount] = useState<number>(0);
 
     useEffect(() => {
-        async function fetchLatestPosts() {
-            const { data, error } = await supabase
+        async function fetchData() {
+            // 1. Fetch latest experience posts
+            const { data: posts } = await supabase
                 .from('experience_posts')
                 .select(`
                     id,
@@ -39,9 +41,16 @@ export default function MarketingLandingPage() {
                 .order('created_at', { ascending: false })
                 .limit(3);
 
-            if (data) setLatestPosts(data);
+            if (posts) setLatestPosts(posts);
+
+            // 2. Fetch total company count
+            const { count } = await supabase
+                .from('company_profiles')
+                .select('id', { count: 'exact', head: true });
+
+            if (count !== null) setCompanyCount(count);
         }
-        fetchLatestPosts();
+        fetchData();
     }, []);
 
     // Fallback static reviews if no posts exist
@@ -91,7 +100,7 @@ export default function MarketingLandingPage() {
                         {/* Trust Statistics Badges */}
                         <div className="mt-16 flex flex-wrap gap-4 md:gap-8 border-t border-slate-100 pt-10">
                             <div className="flex flex-col">
-                                <span className="text-2xl md:text-3xl font-black text-slate-900">{"12개"}</span>
+                                <span className="text-2xl md:text-3xl font-black text-slate-900">{`${companyCount || 6}개`}</span>
                                 <span className="text-xs md:text-sm font-bold text-slate-400">{"전국 입점업체"}</span>
                             </div>
                             <div className="w-px h-10 bg-slate-200 self-center hidden sm:block" />
