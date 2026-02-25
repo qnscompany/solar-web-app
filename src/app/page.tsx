@@ -54,20 +54,31 @@ export default function MarketingLandingPage() {
         fetchData();
     }, []);
 
+    // Fallback static reviews with real company IDs
+    const fallbackReviews = [
+        { id: 'f_1', company_id: '6237c23f-2009-4227-8fdb-1cf221ea6c61', name: '김○숙', loc: '당진시 당진동', cap: '5kW', stars: 5, text: "당진 시내 아파트 살면서 옥상 설치 고민했는데, 한빛 덕분에 정부 지원금 혜택까지 꼼꼼히 챙겼습니다. 당진 주민들한테는 역시 여기가 최고네요." },
+        { id: 'f_2', company_id: 'f2601768-58d8-4868-8bce-0d9bb427bc8c', name: '이○철', loc: '서산시 동문동', cap: '10kW', stars: 5, text: "서산 시청 보조금 신청 절차도 완벽하게 대행해주셨어요. 지역 업체라 그런지 어제 점검 요청했는데 오늘 아침에 바로 오셔서 깜짝 놀랐습니다." },
+        { id: 'f_3', company_id: '0ef63c60-ddbb-4a4c-8d53-1acf6c5e0f96', name: '박○순', loc: '아산시 온양동', cap: '3kW', stars: 4, text: "아산 지역 다른 업체보다 전문성이 느껴졌어요. 태양광 완전 처음인데 상담부터 설치까지 친절하게 설명해주시고 뒷정리도 아주 깔끔했습니다." }
+    ];
+
+    // Combine for auto-scroll loop (Double the list for seamless feel)
+    const displayPosts = latestPosts.length > 0 ? [...latestPosts, ...latestPosts] : [...fallbackReviews, ...fallbackReviews];
+
     // Auto-scroll logic
     useEffect(() => {
         const container = scrollContainerRef.current;
-        if (!container || latestPosts.length === 0) return;
+        if (!container || displayPosts.length === 0) return;
 
         let animationFrameId: number;
-        let scrollSpeed = 0.6; // slow scroll speed
+        let scrollSpeed = 0.8; // Smooth, slow speed
 
         const animate = () => {
             if (!container) return;
+
             container.scrollLeft += scrollSpeed;
 
-            // Seamless looping (simple approach: reset when reached end)
-            if (container.scrollLeft >= container.scrollWidth - container.clientWidth - 1) {
+            // Seamless jump: if scrolled past the first set of items (halfway), reset to 0
+            if (container.scrollLeft >= container.scrollWidth / 2) {
                 container.scrollLeft = 0;
             }
 
@@ -87,14 +98,7 @@ export default function MarketingLandingPage() {
             container.removeEventListener('mouseenter', handleMouseEnter);
             container.removeEventListener('mouseleave', handleMouseLeave);
         };
-    }, [latestPosts]);
-
-    // Fallback static reviews if no posts exist
-    const fallbackReviews = [
-        { name: '김○숙', loc: '당진시 당진동', cap: '5kW', stars: 5, text: "당진 시내 아파트 살면서 옥상 설치 고민했는데, 한빛 덕분에 정부 지원금 혜택까지 꼼꼼히 챙겼습니다. 당진 주민들한테는 역시 여기가 최고네요." },
-        { name: '이○철', loc: '서산시 동문동', cap: '10kW', stars: 5, text: "서산 시청 보조금 신청 절차도 완벽하게 대행해주셨어요. 지역 업체라 그런지 어제 점검 요청했는데 오늘 아침에 바로 오셔서 깜짝 놀랐습니다." },
-        { name: '박○순', loc: '아산시 온양동', cap: '3kW', stars: 4, text: "아산 지역 다른 업체보다 전문성이 느껴졌어요. 태양광 완전 처음인데 상담부터 설치까지 친절하게 설명해주시고 뒷정리도 아주 깔끔했습니다." }
-    ];
+    }, [displayPosts]);
 
     return (
         <div className="min-h-screen bg-slate-50 font-sans text-slate-900 overflow-x-hidden">
@@ -260,73 +264,43 @@ export default function MarketingLandingPage() {
                         ref={scrollContainerRef}
                         className="flex overflow-x-auto gap-8 pb-12 no-scrollbar px-1"
                     >
-                        {latestPosts.length > 0 ? (
-                            latestPosts.map((post, i) => (
-                                <Link
-                                    key={post.id}
-                                    href={`/companies/${post.company_id}`}
-                                    className="group relative flex-shrink-0 w-[320px] md:w-[450px] bg-white p-10 rounded-[40px] border border-slate-100 shadow-xl shadow-slate-100/50 hover:-translate-y-3 transition-all duration-500 overflow-hidden text-left snap-center"
-                                >
-                                    <div className="absolute top-0 right-0 w-24 h-24 bg-blue-50 rounded-bl-[60px] -z-10 group-hover:bg-blue-100 transition-colors duration-500" />
-                                    <div className="flex items-center gap-5 mb-8">
-                                        <div className="w-14 h-14 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center font-black text-xl shadow-inner uppercase">
-                                            {(post.company_profiles as any)?.company_name?.[0] || 'Q'}
-                                        </div>
-                                        <div>
-                                            <h3 className="font-black text-slate-900 text-lg">{(post.company_profiles as any)?.company_name}</h3>
-                                            <p className="text-xs font-black text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md inline-block mt-1">{(post.company_profiles as any)?.headquarters_address?.split(' ').slice(0, 2).join(' ')}</p>
-                                        </div>
+                        {displayPosts.map((post, i) => (
+                            <Link
+                                key={post.id + '-' + i}
+                                href={`/companies/${post.company_id}`}
+                                className="group relative flex-shrink-0 w-[320px] md:w-[450px] bg-white p-10 rounded-[40px] border border-slate-100 shadow-xl shadow-slate-100/50 hover:-translate-y-3 transition-all duration-500 overflow-hidden text-left cursor-pointer"
+                            >
+                                <div className="absolute top-0 right-0 w-24 h-24 bg-blue-50 rounded-bl-[60px] -z-10 group-hover:bg-blue-100 transition-colors duration-500" />
+                                <div className="flex items-center gap-5 mb-8">
+                                    <div className="w-14 h-14 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center font-black text-xl shadow-inner uppercase">
+                                        {post.type !== 'fallback' ? ((post.company_profiles as any)?.company_name?.[0] || 'Q') : post.name[0]}
                                     </div>
-                                    <div className="flex text-yellow-400 gap-1 mb-6">
-                                        {[...Array(5)].map((_, j) => (
-                                            <Star key={j} className={`w-5 h-5 ${j < post.rating ? 'fill-current' : 'text-slate-100'}`} />
-                                        ))}
-                                    </div>
-                                    <h4 className="font-black text-slate-900 mb-3 text-xl">{post.title}</h4>
-                                    <p className="text-slate-600 font-bold leading-relaxed line-clamp-3 text-base">
-                                        {post.content}
-                                    </p>
-                                    <div className="mt-8 pt-6 border-t border-slate-50 flex items-center justify-between text-xs font-black text-blue-600 group-hover:translate-x-1 transition-transform">
-                                        <span>업체 정보 및 견적 요청하기</span>
-                                        <ArrowRight className="w-4 h-4" />
-                                    </div>
-                                </Link>
-                            ))
-                        ) : (
-                            fallbackReviews.map((review, i) => (
-                                <Link
-                                    key={i}
-                                    href="/companies"
-                                    className="group relative flex-shrink-0 w-[320px] md:w-[450px] bg-white p-10 rounded-[40px] border border-slate-100 shadow-xl shadow-slate-100/50 hover:-translate-y-3 transition-all duration-500 overflow-hidden snap-center cursor-pointer"
-                                >
-                                    <div className="absolute top-0 right-0 w-24 h-24 bg-orange-50 rounded-bl-[60px] -z-10 group-hover:bg-yellow-50 transition-colors duration-500" />
-                                    <div className="flex items-center gap-5 mb-8">
-                                        <div className="w-14 h-14 bg-gradient-to-br from-orange-100 to-orange-200 text-orange-600 rounded-2xl flex items-center justify-center font-black text-xl shadow-inner">
-                                            {review.name[0]}
-                                        </div>
-                                        <div>
-                                            <h3 className="font-black text-slate-900 text-lg">{review.name} 고객님</h3>
-                                            <p className="text-xs font-black text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md inline-block mt-1">{review.loc} | {review.cap}</p>
-                                        </div>
-                                    </div>
-                                    <div className="flex text-yellow-400 gap-1 mb-6">
-                                        {[...Array(5)].map((_, j) => (
-                                            <Star key={j} className={`w-5 h-5 ${j < review.stars ? 'fill-current' : 'text-slate-100'}`} />
-                                        ))}
-                                    </div>
-                                    <div className="relative">
-                                        <Quote className="absolute -top-4 -left-2 w-10 h-10 text-slate-50 opacity-10 group-hover:text-orange-100 transition-colors" />
-                                        <p className="text-slate-700 font-bold leading-relaxed relative z-10 text-lg">
-                                            {review.text}
+                                    <div>
+                                        <h3 className="font-black text-slate-900 text-lg">
+                                            {post.type !== 'fallback' ? (post.company_profiles as any)?.company_name : (post.name + ' 고객님')}
+                                        </h3>
+                                        <p className="text-xs font-black text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md inline-block mt-1">
+                                            {post.type !== 'fallback'
+                                                ? (post.company_profiles as any)?.headquarters_address?.split(' ').slice(0, 2).join(' ')
+                                                : post.loc}
                                         </p>
                                     </div>
-                                    <div className="mt-8 pt-6 border-t border-slate-50 flex items-center justify-between text-xs font-black text-blue-600 group-hover:translate-x-1 transition-transform">
-                                        <span>업체 정보 상세보기</span>
-                                        <ArrowRight className="w-4 h-4" />
-                                    </div>
-                                </Link>
-                            ))
-                        )}
+                                </div>
+                                <div className="flex text-yellow-400 gap-1 mb-6">
+                                    {[...Array(5)].map((_, j) => (
+                                        <Star key={j} className={`w-5 h-5 ${j < (post.rating || post.stars) ? 'fill-current' : 'text-slate-100'}`} />
+                                    ))}
+                                </div>
+                                <h4 className="font-black text-slate-900 mb-3 text-xl">{post.title || (post.text.length > 20 ? post.text.slice(0, 20) + '...' : post.text)}</h4>
+                                <p className="text-slate-600 font-bold leading-relaxed line-clamp-3 text-base">
+                                    {post.content || post.text}
+                                </p>
+                                <div className="mt-8 pt-6 border-t border-slate-50 flex items-center justify-between text-xs font-black text-blue-600 group-hover:translate-x-1 transition-transform">
+                                    <span>업체 정보 및 견적 요청하기</span>
+                                    <ArrowRight className="w-4 h-4" />
+                                </div>
+                            </Link>
+                        ))}
                     </div>
                 </div>
             </section>
