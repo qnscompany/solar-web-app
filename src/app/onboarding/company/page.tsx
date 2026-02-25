@@ -101,33 +101,35 @@ function OnboardingForm() {
 
             if (activeTab === 'create') {
                 if (isEdit && profileId) {
-                    // 1. 업체 프로필 업데이트
-                    const { error: profileError } = await supabase
-                        .from('company_profiles')
-                        .update({
-                            company_name: formData.company_name,
-                            business_registration_number: formData.business_registration_number,
-                            headquarters_address: formData.headquarters_address,
-                            service_areas: formData.service_areas.split(',').map(s => s.trim()),
-                            latitude,
-                            longitude,
-                        })
-                        .eq('id', profileId);
-
-                    if (profileError) throw profileError;
-
-                    // 2. 업체 역량 정보 업데이트
-                    const { error: capError } = await supabase
-                        .from('company_capabilities')
-                        .upsert({
-                            company_id: profileId,
+                    // Instead of updating directly, create an approval request
+                    const requestedChanges = {
+                        company_name: formData.company_name,
+                        business_registration_number: formData.business_registration_number,
+                        headquarters_address: formData.headquarters_address,
+                        service_areas: formData.service_areas.split(',').map(s => s.trim()),
+                        latitude,
+                        longitude,
+                        capabilities: {
                             cumulative_capacity_mw: parseFloat(formData.cumulative_capacity_mw) || 0,
                             construction_capacity_value: parseInt(formData.construction_capacity_value) || 0,
                             warranty_period_years: parseInt(formData.warranty_period_years) || 2,
                             technician_count: parseInt(formData.technician_count) || 1,
-                        });
+                        }
+                    };
 
-                    if (capError) throw capError;
+                    const { error: requestError } = await supabase
+                        .from('profile_update_requests')
+                        .insert([{
+                            company_id: profileId,
+                            requested_changes: requestedChanges,
+                            status: 'pending'
+                        }]);
+
+                    if (requestError) throw requestError;
+
+                    alert('정보 수정 요청이 완료되었습니다. 관리자 승인 후 반영됩니다.');
+                    router.push('/dashboard');
+                    return;
                 } else {
                     // 1. 업체 프로필 생성
                     const { data: profile, error: profileError } = await supabase
