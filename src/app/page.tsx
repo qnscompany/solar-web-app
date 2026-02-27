@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import SolarCarousel from '@/components/solar-carousel/SolarCarousel';
 import SolarCalculator from '@/components/SolarCalculator';
+import LeadRequestForm from '@/components/LeadRequestForm';
 
 /**
  * 마케팅 랜딩 페이지 컴포넌트
@@ -129,7 +130,7 @@ export default function MarketingLandingPage() {
                             {"우리 동네 검증된 시공업체만 모았습니다. 시공능력, A/S, 평판을 한눈에 비교하세요."}
                         </p>
                         <div className="flex flex-col gap-4">
-                            <Link href="/companies" className="group inline-flex items-center justify-center gap-3 px-8 py-5 bg-[#FBBF24] text-slate-900 rounded-2xl font-black text-xl hover:bg-yellow-500 shadow-xl shadow-yellow-200 transition-all">
+                            <Link href="#lead-form" className="group inline-flex items-center justify-center gap-3 px-8 py-5 bg-[#FBBF24] text-slate-900 rounded-2xl font-black text-xl hover:bg-yellow-500 shadow-xl shadow-yellow-200 transition-all">
                                 {"30초 만에 우리 동네 업체 찾기 →"}
                             </Link>
                             <p className="text-sm font-bold text-slate-500 ml-2">
@@ -185,6 +186,24 @@ export default function MarketingLandingPage() {
                     </div>
                 </div>
                 <div className="absolute bottom-0 left-0 w-full h-1/2 bg-gradient-to-t from-white to-transparent -z-10" />
+            </section>
+
+            {/* -----------------------------------------------------------------
+                [SECTION] Lead Request Form
+                - 부지 정보(주소, 형태, 용량)를 직접 입력받는 구역
+            ----------------------------------------------------------------- */}
+            <section id="lead-form" className="py-20 bg-white">
+                <div className="max-w-4xl mx-auto px-6">
+                    <div className="text-center mb-12">
+                        <h2 className="text-3xl md:text-5xl font-black text-slate-900 mb-6 tracking-tight">
+                            {"부지 정보 입력하고 견적 받기"}
+                        </h2>
+                        <p className="text-lg text-slate-500 font-bold max-w-2xl mx-auto leading-relaxed">
+                            {"설치하실 곳의 주소와 정보를 입력해 주세요. \n지역 내 검증된 업체들이 최적의 견적을 제안해 드립니다."}
+                        </p>
+                    </div>
+                    <LeadRequestForm />
+                </div>
             </section>
 
             {/* Target Separation (Consumer / Company) */}
@@ -322,8 +341,8 @@ export default function MarketingLandingPage() {
 
             {/* Mobile Sticky CTA */}
             <div className="fixed bottom-6 left-6 right-6 z-50 md:hidden">
-                <Link href="/companies" className="flex items-center justify-center w-full py-4 bg-[#FBBF24] text-slate-900 rounded-2xl font-black text-lg shadow-2xl border-2 border-white">
-                    {"지금 바로 무료 견격 받기 →"}
+                <Link href="#lead-form" className="flex items-center justify-center w-full py-4 bg-[#FBBF24] text-slate-900 rounded-2xl font-black text-lg shadow-2xl border-2 border-white">
+                    {"지금 바로 무료 견적 받기 →"}
                 </Link>
             </div>
 

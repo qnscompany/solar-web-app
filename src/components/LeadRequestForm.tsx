@@ -1,16 +1,16 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
-import { sendLeadNotificationAction } from '@/app/actions/leads';
+import { sendLeadNotificationAction, createLeadAction } from '@/app/actions/leads';
 
 interface LeadRequestFormProps {
-    companyId: string;
-    companyName: string;
+    companyId?: string;
+    companyName?: string;
 }
 
 /**
  * 고객 견적 요청 폼 컴포넌트
- * 업체 상세 페이지에서 사용자가 견적을 요청할 때 사용됩니다.
+ * 업체 상세 페이지 또는 메인 랜딩 페이지에서 사용자가 견적을 요청할 때 사용됩니다.
  */
 export default function LeadRequestForm({ companyId, companyName }: LeadRequestFormProps) {
     // [상태 관리] 사용자 입력 데이터 및 UI 상태(제출 중, 성공 여부, 에러)
@@ -18,13 +18,16 @@ export default function LeadRequestForm({ companyId, companyName }: LeadRequestF
         customer_name: '',
         phone: '',
         address: '',
-        expected_capacity: '',
+        expected_capacity_kw: '3', // 기본값 3kW
+        property_type: 'roof', // 'roof', 'land'
         notes: '',
     });
     const [isAgreed, setIsAgreed] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
     const [error, setError] = useState<string | null>(null);
+
+    const displayName = companyName || '우리 동네 우수 업체';
 
     /**
      * 폼 제출 이벤트 핸들러
@@ -45,51 +48,38 @@ export default function LeadRequestForm({ companyId, companyName }: LeadRequestF
         setError(null);
 
         try {
-            // [STEP 1] 고유 리드 ID 생성
-            const newLeadId = crypto.randomUUID();
+            // [STEP 1] 공개/비공개 리드 생성 서버 액션 호출
+            const result = await createLeadAction({
+                customer_name: formData.customer_name,
+                phone: formData.phone,
+                address_full: formData.address,
+                expected_capacity_kw: Number(formData.expected_capacity_kw),
+                property_type: formData.property_type,
+                notes: formData.notes // Notes는 일단 Public에 저장하거나 추후 확장
+            } as any);
 
-            // [STEP 2] Supabase에 데이터 저장
-            const { error: submitError } = await supabase
-                .from('lead_requests')
-                .insert([
-                    {
-                        id: newLeadId,
-                        company_id: companyId,
-                        customer_name: formData.customer_name,
-                        phone: formData.phone,
-                        address: formData.address,
-                        expected_capacity: formData.expected_capacity,
-                        notes: formData.notes,
-                        status: 'pending',
-                    },
-                ]);
-
-            if (submitError) {
-                console.error('[LeadForm] DB Insertion Error:', submitError);
-                throw submitError;
+            if (!result.success) {
+                throw new Error(result.error);
             }
 
-            // [STEP 3] 업체 담당자에게 이메일 알림 발송
-            try {
-                const result = await sendLeadNotificationAction({
+            const newLeadId = result.leadId;
+
+            // [STEP 2] 업체 담당자에게 이메일 알림 발송 (업체 ID가 있는 경우만)
+            if (companyId && newLeadId) {
+                await sendLeadNotificationAction({
                     leadId: newLeadId,
                     companyId: companyId
                 });
-
-                if (!result.success) {
-                    console.warn('[LeadForm] Email Notification skipped/failed:', result.error);
-                }
-            } catch (notiErr) {
-                console.error('[LeadForm] Critical error in notification action:', notiErr);
             }
 
-            // [STEP 4] UI 성공 상태로 전환 및 데이터 초기화
+            // [STEP 3] UI 성공 상태로 전환 및 데이터 초기화
             setIsSuccess(true);
             setFormData({
                 customer_name: '',
                 phone: '',
                 address: '',
-                expected_capacity: '',
+                expected_capacity_kw: '3',
+                property_type: 'roof',
                 notes: '',
             });
             setIsAgreed(false);
@@ -104,7 +94,7 @@ export default function LeadRequestForm({ companyId, companyName }: LeadRequestF
         return (
             <div className="rounded-xl bg-green-50 p-8 text-center border border-green-200">
                 <h3 className="text-2xl font-bold text-green-700 mb-2">견적 요청 완료!</h3>
-                <p className="text-green-600 font-medium">{companyName}에서 곧 연락드릴 예정입니다.</p>
+                <p className="text-green-600 font-medium">검증된 업체에서 곧 연락드릴 예정입니다.</p>
                 <button
                     onClick={() => setIsSuccess(false)}
                     className="mt-6 px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
@@ -160,17 +150,33 @@ export default function LeadRequestForm({ companyId, companyName }: LeadRequestF
                     />
                 </div>
 
-                <div>
-                    <label htmlFor="expected_capacity" className="block text-sm font-semibold text-gray-700 mb-2">희망 설치 용량 (kW)</label>
-                    <input
-                        type="text"
-                        id="expected_capacity"
-                        required
-                        className="w-full rounded-lg border border-gray-300 p-3 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all outline-none text-gray-900 placeholder:text-gray-500"
-                        placeholder="예: 3kW, 10kW 이상 등"
-                        value={formData.expected_capacity}
-                        onChange={(e) => setFormData({ ...formData, expected_capacity: e.target.value })}
-                    />
+                <div className="grid gap-6 md:grid-cols-2">
+                    <div>
+                        <label htmlFor="property_type" className="block text-sm font-semibold text-gray-700 mb-2">설치 형태</label>
+                        <select
+                            id="property_type"
+                            className="w-full rounded-lg border border-gray-300 p-3 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all outline-none text-gray-900"
+                            value={formData.property_type}
+                            onChange={(e) => setFormData({ ...formData, property_type: e.target.value })}
+                        >
+                            <option value="roof">지붕 (주택/창고)</option>
+                            <option value="land">토지</option>
+                            <option value="factory">공장</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label htmlFor="expected_capacity_kw" className="block text-sm font-semibold text-gray-700 mb-2">희망 설치 용량 (kW)</label>
+                        <input
+                            type="number"
+                            id="expected_capacity_kw"
+                            required
+                            min="1"
+                            className="w-full rounded-lg border border-gray-300 p-3 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all outline-none text-gray-900 placeholder:text-gray-500"
+                            placeholder="예: 3"
+                            value={formData.expected_capacity_kw}
+                            onChange={(e) => setFormData({ ...formData, expected_capacity_kw: e.target.value })}
+                        />
+                    </div>
                 </div>
 
                 <div>
@@ -210,11 +216,11 @@ export default function LeadRequestForm({ companyId, companyName }: LeadRequestF
                     type="submit"
                     disabled={isSubmitting}
                     className={`w-full rounded-2xl py-5 text-xl font-black text-white transition-all shadow-xl ${isSubmitting ? 'bg-slate-400 cursor-not-allowed' :
-                            !isAgreed ? 'bg-slate-300 cursor-pointer hover:bg-slate-400' :
-                                'bg-blue-600 hover:bg-blue-700 hover:shadow-blue-200 active:transform active:scale-[0.98]'
+                        !isAgreed ? 'bg-slate-300 cursor-pointer hover:bg-slate-400' :
+                            'bg-blue-600 hover:bg-blue-700 hover:shadow-blue-200 active:transform active:scale-[0.98]'
                         }`}
                 >
-                    {isSubmitting ? '요청 전송 중...' : `${companyName} 무료 견적 받기`}
+                    {isSubmitting ? '요청 전송 중...' : `${displayName} 무료 견적 받기`}
                 </button>
             </form>
         </section>
